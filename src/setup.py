@@ -4,11 +4,11 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="gcpdemo1",
+    name="gcpdemo2",
     version="0.0.1",
     author="NT Concepts",
     author_email="zachary.mostowsky@ntconcepts.com",
-    description="GCP Demo 1 source code package.",
+    description="GCP Demo 2 source code package.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/pypa/sampleproject",
