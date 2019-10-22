@@ -49,7 +49,23 @@ interface Demo2Options : DataflowPipelineOptions {
 
     fun setDropTable(dropTable: ValueProvider<Boolean>)
 
+    @get:Description("Weight to apply to random partitioning of training data. Example: 70 for 70 percent. Default: 70.0")
+    @get:Default.Double(70.0)
+    val mlPartitionTrainWeight: ValueProvider<Double>
 
-//    val categoricalValues: ValueProvider<List<String>>
+    fun setMlPartitionTrainWeight(mlPartitionTrainWeight: ValueProvider<Double>)
+
+    @get:Description("Weight to apply to random partitioning of testing data. Example: 15 for 15 percent. Default: 15.0")
+    @get:Default.Double(15.0)
+    val mlPartitionTestWeight: ValueProvider<Double>
+
+    fun setMlPartitionTestWeight(mlPartitionTestWeight: ValueProvider<Double>)
+
+    @get:Description("Weight to apply to random partitioning of validation data. Example: 15 for 15 percent. Default: 15.0")
+    @get:Default.Double(15.0)
+    val mlPartitionValidationWeight: ValueProvider<Double>
+
+    fun setMlPartitionValidationWeight(mlPartitionValidationWeight: ValueProvider<Double>)
+
 
 }
