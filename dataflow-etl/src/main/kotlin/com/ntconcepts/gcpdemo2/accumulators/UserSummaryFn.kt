@@ -18,7 +18,7 @@ class UserSummaryFn : Combine.CombineFn<Purchase, UserSummary, UserSummary>() {
         accum.Occupation = input.Occupation
         accum.Stay_In_Current_City_Years = input.Stay_In_Current_City_Years
         accum.User_ID = input.User_ID
-        accum.mlPartition = input.mlPartition
+        accum.ml_partition = input.mlPartition
         accum.Purchase_Total += input.Purchase
         accum.Purchase_Count++
         if (input.Product_Category_1 != null) accum.Product_Category_1.add(input.Product_Category_1)
@@ -38,7 +38,7 @@ class UserSummaryFn : Combine.CombineFn<Purchase, UserSummary, UserSummary>() {
             merged.Occupation = accum.Occupation
             merged.Stay_In_Current_City_Years = accum.Stay_In_Current_City_Years
             merged.User_ID = accum.User_ID
-            merged.mlPartition = accum.mlPartition
+            merged.ml_partition = accum.ml_partition
             merged.Purchase_Total += accum.Purchase_Total
             merged.Purchase_Count += accum.Purchase_Count
 

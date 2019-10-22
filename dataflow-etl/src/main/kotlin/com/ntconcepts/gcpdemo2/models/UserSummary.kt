@@ -32,7 +32,7 @@ data class UserSummary(
     @BigQueryField(StandardSQLTypeName.INT64, Field.Mode.REPEATED)
     var Product_Category_3: MutableSet<Int>,
     @BigQueryField(StandardSQLTypeName.STRING, Field.Mode.REQUIRED)
-    var mlPartition: String,
+    var ml_partition: String,
     override var Encoded: MutableMap<String, Int>
 ) : Serializable, OutputBase() {
 

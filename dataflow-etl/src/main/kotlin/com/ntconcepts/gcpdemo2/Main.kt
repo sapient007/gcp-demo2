@@ -142,10 +142,19 @@ fun getPipeline(options: Demo2Options): Pipeline {
         p,
         options,
         userSummaries.apply(
-            "Map to KVs", MapElements.into(
+            "Map to UserSummaries", MapElements.into(
                 TypeDescriptor.of(UserSummary::class.java)
             )
                 .via(KVToUserSummaryFn())
+        ).apply(
+            "Make ML partitions",
+            ParDo.of(
+                SetMLPartitionsFn(
+                    options.mlPartitionTrainWeight,
+                    options.mlPartitionTestWeight,
+                    options.mlPartitionValidationWeight
+                )
+            )
         )
             .apply(
                 "EncodeProductCategories",
