@@ -50,7 +50,12 @@ class EncodeUserCategoriesFn(private val encodedViews: HashMap<String, PCollecti
         //Set each category the user has purchased to 1
         userCat.forEach {
             if (it != null) {
-                val encodedName = "${fieldName}_$it"
+                val cleanedVal = if (it < 10) {
+                    "%02d".format(it)
+                } else {
+                    it.toString()
+                }
+                val encodedName = "${fieldName}_$cleanedVal"
                 encodedVals.add(encodedName)
                 userEncoded[encodedName] = 1
             }
