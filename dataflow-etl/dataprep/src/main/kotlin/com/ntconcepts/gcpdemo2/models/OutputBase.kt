@@ -16,21 +16,30 @@ abstract class OutputBase : OutputInterface, Serializable {
             obj::class.members.forEach {
                 if (it.name == name) {
                     value = when (it.returnType) {
-
                         Int::class.createType(emptyList(), it.returnType.isMarkedNullable) -> {
-                            val num = it.call(obj) as Int
-                            if (num < 10) {
-                                "%02d".format(it.call(obj))
+                            val num = it.call(obj)
+                            if (num != null) {
+                                num as Int
+                                if (num < 10) {
+                                    "%02d".format(it.call(obj))
+                                } else {
+                                    num.toString()
+                                }
                             } else {
-                                num.toString()
+                                ""
                             }
                         }
                         Double::class.createType(emptyList(), it.returnType.isMarkedNullable) -> {
-                            val num = it.call(obj) as Double
-                            if (num < 10) {
-                                "%02d".format(it.call(obj))
+                            val num = it.call(obj)
+                            if (num != null) {
+                                num as Double
+                                if (num < 10) {
+                                    "%02d".format(it.call(obj))
+                                } else {
+                                    num.toString()
+                                }
                             } else {
-                                num.toString()
+                                ""
                             }
                         }
                         else -> it.call(obj).toString()

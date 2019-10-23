@@ -82,9 +82,10 @@ class BigQueryCreateTable(
             //Add encoded fields
             encodedViewsMap.forEach {
                 val fieldName = it.key
-                val encodedDistinctVals = c.sideInput(it.value).sorted()
+                val encodedDistinctVals = c.sideInput(it.value)
 
-                encodedDistinctVals.forEach {
+
+                encodedDistinctVals.sorted().forEach {
                     //Only add the encoded field to the schema if it's whitelisted
                     if ((encodedCategories[fieldName]
                             ?: error("Could not find $fieldName in list of encoded category fields")).contains(clazz)
@@ -98,6 +99,7 @@ class BigQueryCreateTable(
                     }
                 }
             }
+
 
             val tableDefinition = StandardTableDefinition.of(Schema.of(fields))
             bigquery.create(TableInfo.of(tableId, tableDefinition))

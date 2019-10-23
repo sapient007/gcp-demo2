@@ -11,11 +11,12 @@ class OutputBaseTests {
 
         val user = UserSummary()
         user.Marital_Status = 1
+        user.User_ID = null
 
-        val value = UserSummary.getValueAsString("Marital_Status", user)
+        val ms = UserSummary.getValueAsString("Marital_Status", user)
+        assertEquals("01", ms)
 
-
-        assertEquals("01", value)
-
+        val id = UserSummary.getValueAsString("User_ID", user)
+        assertEquals("", id)
     }
 }

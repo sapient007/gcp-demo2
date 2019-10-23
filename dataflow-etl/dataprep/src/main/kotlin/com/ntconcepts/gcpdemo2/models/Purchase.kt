@@ -16,7 +16,7 @@ data class Purchase(
     @BigQueryField(StandardSQLTypeName.STRING, Field.Mode.REQUIRED)
     val Age: String?,
     @BigQueryField(StandardSQLTypeName.INT64, Field.Mode.REQUIRED)
-    val Occupation: Int,
+    val Occupation: Int?,
     @BigQueryField(StandardSQLTypeName.STRING, Field.Mode.REQUIRED)
     val City_Category: String?,
     @BigQueryField(StandardSQLTypeName.STRING, Field.Mode.REQUIRED)

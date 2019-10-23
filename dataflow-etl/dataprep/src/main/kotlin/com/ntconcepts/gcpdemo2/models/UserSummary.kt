@@ -14,7 +14,7 @@ data class UserSummary(
     @BigQueryField(StandardSQLTypeName.STRING, Field.Mode.REQUIRED)
     var Gender: String?,
     @BigQueryField(StandardSQLTypeName.INT64, Field.Mode.REQUIRED)
-    var Occupation: Int,
+    var Occupation: Int?,
     @BigQueryField(StandardSQLTypeName.STRING, Field.Mode.REQUIRED)
     var City_Category: String?,
     @BigQueryField(StandardSQLTypeName.STRING, Field.Mode.REQUIRED)

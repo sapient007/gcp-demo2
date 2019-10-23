@@ -20,7 +20,7 @@ allprojects {
     apply(plugin = "java")
     apply(plugin = "kotlin")
     apply(plugin = "application")
-//    buildDir = File("C:\tmp\${rootProject.name}\${project.name}")
+//    buildDir = File("%temp%${rootProject.name}\${project.name}")
 }
 
 subprojects {

@@ -49,7 +49,7 @@ class CSVParserFn(
         val parser = CSVParser.parse(reader, CSVFormat.RFC4180.withFirstRecordAsHeader())
 
         parser.forEach {
-            val user = Purchase(
+            val purchase = Purchase(
                 it.get(Purchase::User_ID.name).toInt(),
                 it.get(Purchase::Product_ID.name),
                 it.get(Purchase::Gender.name),
@@ -64,22 +64,29 @@ class CSVParserFn(
                 it.get(Purchase::Purchase.name).toInt()
             )
 
-            out.get(usersOutput).output(user)
+            //If any of these are null, drop the row. Nulls in categories 2 and 3 are OK
+            if (purchase.User_ID == null ||
+                purchase.Gender == null ||
+                purchase.Age == null ||
+                purchase.Occupation == null ||
+                purchase.City_Category == null ||
+                purchase.Stay_In_Current_City_Years == null ||
+                purchase.Marital_Status == null ||
+                purchase.Product_Category_1 == null
+            ) {
+                return
+            }
+
+            out.get(usersOutput).output(purchase)
 
             encodedOutputMap.forEach {
                 val fieldName = it.key
                 val tag = it.value
 
-                user::class.members.forEach {
-                    if (it.name == fieldName) {
-                        val value = it.call(user).toString()
-                        //Don't output null or empty values
-                        if (value != "") {
-                            out.get(tag).output(value)
-                        }
-                    }
+                val value = Purchase.getValueAsString(fieldName, purchase)
+                if (value != "") {
+                    out.get(tag).output(value)
                 }
-
 
             }
 
