@@ -82,7 +82,7 @@ class BigQueryCreateTable(
             //Add encoded fields
             encodedViewsMap.forEach {
                 val fieldName = it.key
-                val encodedDistinctVals = c.sideInput(it.value)
+                val encodedDistinctVals = c.sideInput(it.value).sorted()
 
                 encodedDistinctVals.forEach {
                     //Only add the encoded field to the schema if it's whitelisted
