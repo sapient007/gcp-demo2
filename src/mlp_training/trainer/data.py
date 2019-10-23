@@ -78,6 +78,4 @@ def get_data_partition(partition_name):
     client = bigquery_storage_v1beta1.BigQueryStorageClient()
     session = get_session(client, get_table_ref(), get_read_options(partition_name), "projects/{}".format(get_table_ref().project_id))
     reader = get_reader(client, session)
-    df = get_df(reader, session)
-    return df.reindex(sorted(df.columns), axis=1)
-
+    return get_df(reader, session)

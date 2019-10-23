@@ -53,3 +53,24 @@ Linux -
 ```
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
 ```
+
+## Training
+
+### Building the container
+
+```bash
+docker build -f .\src\mlp_training\Dockerfile -t gcr.io/ml-sandbox-1-191918/gcp-demo2:training ./
+```
+
+```bash
+docker push gcr.io/ml-sandbox-1-191918/gcp-demo2:training
+```
+
+### Starting the training job
+
+```bash
+gcloud ai-platform jobs submit training "blackfriday_"$(date +"%Y%m%d_%H%M%S") \
+    --region $REGION \
+    --job-dir $JOB_DIR \
+    --master-image-uri gcr.io/ml-sandbox-1-191918/gcp-demo2:training
+```
