@@ -3,6 +3,7 @@ package com.ntconcepts.gcpdemo2.models
 import com.google.api.services.bigquery.model.TableRow
 import com.ntconcepts.gcpdemo2.utils.BigQueryField
 import java.io.Serializable
+import kotlin.reflect.full.createType
 import kotlin.reflect.full.findAnnotation
 
 abstract class OutputBase : OutputInterface, Serializable {
@@ -14,7 +15,26 @@ abstract class OutputBase : OutputInterface, Serializable {
             var value: String? = null
             obj::class.members.forEach {
                 if (it.name == name) {
-                    value = it.call(obj).toString()
+                    value = when (it.returnType) {
+
+                        Int::class.createType(emptyList(), it.returnType.isMarkedNullable) -> {
+                            val num = it.call(obj) as Int
+                            if (num < 10) {
+                                "%02d".format(it.call(obj))
+                            } else {
+                                num.toString()
+                            }
+                        }
+                        Double::class.createType(emptyList(), it.returnType.isMarkedNullable) -> {
+                            val num = it.call(obj) as Double
+                            if (num < 10) {
+                                "%02d".format(it.call(obj))
+                            } else {
+                                num.toString()
+                            }
+                        }
+                        else -> it.call(obj).toString()
+                    }
                 }
             }
             return value

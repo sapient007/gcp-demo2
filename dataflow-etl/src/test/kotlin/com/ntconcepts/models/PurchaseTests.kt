@@ -9,7 +9,7 @@ class PurchaseTests {
     @Test
     fun getTableRow() {
         val user = Purchase(123)
-        val tableRow = Purchase.Outputs.toTableRow(user)
+        val tableRow = Purchase.toTableRow(user)
         val uid = tableRow["User_ID"]
 
         assertEquals(user.User_ID, uid)
