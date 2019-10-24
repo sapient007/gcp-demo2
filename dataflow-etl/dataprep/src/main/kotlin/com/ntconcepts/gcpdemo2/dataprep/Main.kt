@@ -69,9 +69,9 @@ fun main(args: Array<String>) {
     p.run()
 }
 
-fun getOptions(args: Array<String>): com.ntconcepts.gcpdemo2.dataprep.Demo2Options {
+fun getOptions(args: Array<String>): Demo2Options {
     return PipelineOptionsFactory.fromArgs(*args).withValidation()
-        .`as`(com.ntconcepts.gcpdemo2.dataprep.Demo2Options::class.java)
+        .`as`(Demo2Options::class.java)
 }
 
 fun makeEncodedOutputs(encodedOutputMap: HashMap<String, TupleTag<String>>): TupleTagList {
@@ -88,7 +88,7 @@ fun makeEncodedOutputs(encodedOutputMap: HashMap<String, TupleTag<String>>): Tup
 
 }
 
-fun getPipeline(options: com.ntconcepts.gcpdemo2.dataprep.Demo2Options): Pipeline {
+fun getPipeline(options: Demo2Options): Pipeline {
     val p = Pipeline.create(options)
 
     val encodedOutputMap = HashMap<String, TupleTag<String>>()
@@ -206,7 +206,7 @@ fun groupUsers(purchases: PCollection<Purchase>): PCollection<KV<Int, UserSummar
 
 fun writePurchasesToBQ(
     p: Pipeline,
-    options: com.ntconcepts.gcpdemo2.dataprep.Demo2Options,
+    options: Demo2Options,
     purchases: PCollection<Purchase>,
     encodedViewsPair: Pair<HashMap<String, PCollectionView<List<String>>>, ArrayList<PCollectionView<List<String>>?>>
 ) {
@@ -241,7 +241,7 @@ fun writePurchasesToBQ(
 
 fun writeUserSummariesToBQ(
     p: Pipeline,
-    options: com.ntconcepts.gcpdemo2.dataprep.Demo2Options,
+    options: Demo2Options,
     users: PCollection<UserSummary>,
     encodedViewsPair: Pair<HashMap<String, PCollectionView<List<String>>>, ArrayList<PCollectionView<List<String>>?>>
 ) {
