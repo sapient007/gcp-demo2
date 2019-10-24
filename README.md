@@ -70,7 +70,27 @@ docker push gcr.io/ml-sandbox-1-191918/gcp-demo2:training
 
 ```bash
 gcloud ai-platform jobs submit training "blackfriday_"$(date +"%Y%m%d_%H%M%S") \
-    --region $REGION \
-    --job-dir $JOB_DIR \
+    --region us-east1 \
+    --job-dir gs://gcp-cert-demo-2/output \
     --master-image-uri gcr.io/ml-sandbox-1-191918/gcp-demo2:training
+```
+
+## Deployment
+
+### Creating the deployment 
+
+```bash
+gcloud ml-engine versions create $VERSION_NAME \
+    --model=$MODEL_NAME \
+    --framework=xgboost \
+    --origin=$BOOSTER_PATH \
+    --python-version=3.5 \
+    --runtime-version=1.14
+```
+
+Set the new version to be the default
+
+```bash
+gcloud ml-engine versions set-default $VERSION_NAME \
+    --model=$MODEL_NAME 
 ```

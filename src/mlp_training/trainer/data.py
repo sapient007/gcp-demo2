@@ -14,7 +14,10 @@ def get_read_options(partition_name):
     read_options.selected_fields.append("Purchase_Total")
     read_options.selected_fields.append("Purchase_Count")
     for x in range(21):
-        read_options.selected_fields.append("Occupation_%d" % (x))
+        if (x < 10):
+            read_options.selected_fields.append("Occupation_%02d" % (x))
+        else: 
+            read_options.selected_fields.append("Occupation_%d" % (x))
     read_options.selected_fields.append("City_Category_a")
     read_options.selected_fields.append("City_Category_b")
     read_options.selected_fields.append("City_Category_c")
@@ -31,17 +34,26 @@ def get_read_options(partition_name):
     read_options.selected_fields.append("Age_51_55")
     read_options.selected_fields.append("Age_55")
     for x in range(1, 21):
-        read_options.selected_fields.append("Product_Category_1_%d" % (x))
+        if (x < 10):
+            read_options.selected_fields.append("Product_Category_1_%02d" % (x))
+        else: 
+            read_options.selected_fields.append("Product_Category_1_%d" % (x))
     for x in range(1, 19):
-        read_options.selected_fields.append("Product_Category_2_%d" % (x))
+        if (x < 10):
+            read_options.selected_fields.append("Product_Category_2_%02d" % (x))
+        else: 
+            read_options.selected_fields.append("Product_Category_2_%d" % (x))
     for x in range(1, 19):
-        read_options.selected_fields.append("Product_Category_3_%d" % (x))
+        if (x < 10):
+            read_options.selected_fields.append("Product_Category_3_%02d" % (x))
+        else: 
+            read_options.selected_fields.append("Product_Category_3_%d" % (x))
 
     # These vals don't exist
-    read_options.selected_fields.remove("Product_Category_2_1")
-    read_options.selected_fields.remove("Product_Category_3_7")
-    read_options.selected_fields.remove("Product_Category_3_1")
-    read_options.selected_fields.remove("Product_Category_3_2")
+    read_options.selected_fields.remove("Product_Category_2_01")
+    read_options.selected_fields.remove("Product_Category_3_07")
+    read_options.selected_fields.remove("Product_Category_3_01")
+    read_options.selected_fields.remove("Product_Category_3_02")
 
     read_options.selected_fields.append
 

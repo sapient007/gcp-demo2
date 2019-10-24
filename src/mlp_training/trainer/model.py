@@ -13,8 +13,6 @@ def process_data():
     x_val = test_raw.drop(['Purchase_Total'], axis=1)
     y_val = test_raw['Purchase_Total']
 
-    print(x_train.columns)
-
     return x_train, y_train, x_val, y_val
 
 
