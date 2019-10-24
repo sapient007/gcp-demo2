@@ -1,6 +1,6 @@
 package com.ntconcepts.models
 
-import com.ntconcepts.gcpdemo2.models.Purchase
+import com.ntconcepts.gcpdemo2.dataprep.models.Purchase
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

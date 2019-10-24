@@ -1,4 +1,4 @@
-package com.ntconcepts.gcpdemo2.utils
+package com.ntconcepts.gcpdemo2.dataprep.utils
 
 import com.google.cloud.bigquery.Field
 import com.google.cloud.bigquery.StandardSQLTypeName

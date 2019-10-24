@@ -1,6 +1,3 @@
-
-
-
 application {
-    mainClassName = "com.ntconcepts.gcpdemo2.MainKt"
+    mainClassName = "com.ntconcepts.gcpdemo2.dataprep.MainKt"
 }

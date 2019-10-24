@@ -1,7 +1,7 @@
-package com.ntconcepts.gcpdemo2.transforms
+package com.ntconcepts.gcpdemo2.dataprep.transforms
 
 import com.google.api.services.bigquery.model.TableRow
-import com.ntconcepts.gcpdemo2.models.Purchase
+import com.ntconcepts.gcpdemo2.dataprep.models.Purchase
 import org.apache.beam.sdk.transforms.SimpleFunction
 
 class OutputPurchaseBigQueryFn : SimpleFunction<Purchase, TableRow>() {

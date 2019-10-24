@@ -1,4 +1,4 @@
-package com.ntconcepts.gcpdemo2.models
+package com.ntconcepts.gcpdemo2.dataprep.models
 
 import com.google.api.services.bigquery.model.TableRow
 

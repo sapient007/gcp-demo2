@@ -1,9 +1,9 @@
-package com.ntconcepts.gcpdemo2.transforms
+package com.ntconcepts.gcpdemo2.dataprep.transforms
 
 import com.google.cloud.storage.Blob
 import com.google.cloud.storage.BlobId
 import com.google.cloud.storage.StorageOptions
-import com.ntconcepts.gcpdemo2.models.Purchase
+import com.ntconcepts.gcpdemo2.dataprep.models.Purchase
 import org.apache.beam.sdk.io.fs.MatchResult
 import org.apache.beam.sdk.transforms.DoFn
 import org.apache.beam.sdk.values.TupleTag

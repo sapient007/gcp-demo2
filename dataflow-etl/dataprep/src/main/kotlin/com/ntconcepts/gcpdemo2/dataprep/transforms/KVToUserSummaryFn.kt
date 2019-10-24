@@ -1,6 +1,6 @@
-package com.ntconcepts.gcpdemo2.transforms
+package com.ntconcepts.gcpdemo2.dataprep.transforms
 
-import com.ntconcepts.gcpdemo2.models.UserSummary
+import com.ntconcepts.gcpdemo2.dataprep.models.UserSummary
 import org.apache.beam.sdk.transforms.SimpleFunction
 import org.apache.beam.sdk.values.KV
 

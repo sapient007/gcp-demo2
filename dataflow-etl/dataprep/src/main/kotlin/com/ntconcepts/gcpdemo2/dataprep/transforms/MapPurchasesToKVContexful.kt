@@ -1,6 +1,6 @@
-package com.ntconcepts.gcpdemo2.transforms
+package com.ntconcepts.gcpdemo2.dataprep.transforms
 
-import com.ntconcepts.gcpdemo2.models.Purchase
+import com.ntconcepts.gcpdemo2.dataprep.models.Purchase
 import org.apache.beam.sdk.transforms.Contextful
 import org.apache.beam.sdk.values.KV
 

@@ -1,4 +1,4 @@
-package com.ntconcepts.gcpdemo2
+package com.ntconcepts.gcpdemo2.dataprep
 
 import org.apache.beam.runners.dataflow.options.DataflowPipelineOptions
 import org.apache.beam.sdk.options.Default

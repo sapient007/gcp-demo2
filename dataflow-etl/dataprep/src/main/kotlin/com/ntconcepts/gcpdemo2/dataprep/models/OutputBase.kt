@@ -1,7 +1,7 @@
-package com.ntconcepts.gcpdemo2.models
+package com.ntconcepts.gcpdemo2.dataprep.models
 
 import com.google.api.services.bigquery.model.TableRow
-import com.ntconcepts.gcpdemo2.utils.BigQueryField
+import com.ntconcepts.gcpdemo2.dataprep.utils.BigQueryField
 import java.io.Serializable
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.findAnnotation

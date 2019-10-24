@@ -1,12 +1,12 @@
-package com.ntconcepts.gcpdemo2
+package com.ntconcepts.gcpdemo2.dataprep
 
 import com.google.api.services.bigquery.model.TableRow
 import com.google.common.collect.ImmutableSet
-import com.ntconcepts.gcpdemo2.accumulators.UserSummaryFn
-import com.ntconcepts.gcpdemo2.models.Purchase
-import com.ntconcepts.gcpdemo2.models.UserSummary
-import com.ntconcepts.gcpdemo2.transforms.*
-import com.ntconcepts.gcpdemo2.utils.CleanColumnName
+import com.ntconcepts.gcpdemo2.dataprep.accumulators.UserSummaryFn
+import com.ntconcepts.gcpdemo2.dataprep.models.Purchase
+import com.ntconcepts.gcpdemo2.dataprep.models.UserSummary
+import com.ntconcepts.gcpdemo2.dataprep.transforms.*
+import com.ntconcepts.gcpdemo2.dataprep.utils.CleanColumnName
 import org.apache.beam.sdk.Pipeline
 import org.apache.beam.sdk.coders.KvCoder
 import org.apache.beam.sdk.coders.SerializableCoder
@@ -69,9 +69,9 @@ fun main(args: Array<String>) {
     p.run()
 }
 
-fun getOptions(args: Array<String>): Demo2Options {
+fun getOptions(args: Array<String>): com.ntconcepts.gcpdemo2.dataprep.Demo2Options {
     return PipelineOptionsFactory.fromArgs(*args).withValidation()
-        .`as`(Demo2Options::class.java)
+        .`as`(com.ntconcepts.gcpdemo2.dataprep.Demo2Options::class.java)
 }
 
 fun makeEncodedOutputs(encodedOutputMap: HashMap<String, TupleTag<String>>): TupleTagList {
@@ -88,7 +88,7 @@ fun makeEncodedOutputs(encodedOutputMap: HashMap<String, TupleTag<String>>): Tup
 
 }
 
-fun getPipeline(options: Demo2Options): Pipeline {
+fun getPipeline(options: com.ntconcepts.gcpdemo2.dataprep.Demo2Options): Pipeline {
     val p = Pipeline.create(options)
 
     val encodedOutputMap = HashMap<String, TupleTag<String>>()
@@ -206,7 +206,7 @@ fun groupUsers(purchases: PCollection<Purchase>): PCollection<KV<Int, UserSummar
 
 fun writePurchasesToBQ(
     p: Pipeline,
-    options: Demo2Options,
+    options: com.ntconcepts.gcpdemo2.dataprep.Demo2Options,
     purchases: PCollection<Purchase>,
     encodedViewsPair: Pair<HashMap<String, PCollectionView<List<String>>>, ArrayList<PCollectionView<List<String>>?>>
 ) {
@@ -241,7 +241,7 @@ fun writePurchasesToBQ(
 
 fun writeUserSummariesToBQ(
     p: Pipeline,
-    options: Demo2Options,
+    options: com.ntconcepts.gcpdemo2.dataprep.Demo2Options,
     users: PCollection<UserSummary>,
     encodedViewsPair: Pair<HashMap<String, PCollectionView<List<String>>>, ArrayList<PCollectionView<List<String>>?>>
 ) {

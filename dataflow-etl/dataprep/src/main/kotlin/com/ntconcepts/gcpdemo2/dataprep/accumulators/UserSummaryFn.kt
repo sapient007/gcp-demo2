@@ -1,7 +1,7 @@
-package com.ntconcepts.gcpdemo2.accumulators
+package com.ntconcepts.gcpdemo2.dataprep.accumulators
 
-import com.ntconcepts.gcpdemo2.models.Purchase
-import com.ntconcepts.gcpdemo2.models.UserSummary
+import com.ntconcepts.gcpdemo2.dataprep.models.Purchase
+import com.ntconcepts.gcpdemo2.dataprep.models.UserSummary
 import org.apache.beam.sdk.transforms.Combine
 
 class UserSummaryFn : Combine.CombineFn<Purchase, UserSummary, UserSummary>() {

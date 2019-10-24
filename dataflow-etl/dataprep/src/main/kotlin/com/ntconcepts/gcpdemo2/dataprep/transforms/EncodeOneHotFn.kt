@@ -1,9 +1,9 @@
-package com.ntconcepts.gcpdemo2.transforms
+package com.ntconcepts.gcpdemo2.dataprep.transforms
 
 import com.google.common.collect.ImmutableSet
-import com.ntconcepts.gcpdemo2.models.OutputBase
-import com.ntconcepts.gcpdemo2.models.OutputInterface
-import com.ntconcepts.gcpdemo2.utils.CleanColumnName
+import com.ntconcepts.gcpdemo2.dataprep.models.OutputBase
+import com.ntconcepts.gcpdemo2.dataprep.models.OutputInterface
+import com.ntconcepts.gcpdemo2.dataprep.utils.CleanColumnName
 import org.apache.beam.sdk.transforms.DoFn
 import org.apache.beam.sdk.values.PCollectionView
 

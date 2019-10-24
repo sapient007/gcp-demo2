@@ -1,4 +1,4 @@
-package com.ntconcepts.gcpdemo2.utils
+package com.ntconcepts.gcpdemo2.dataprep.utils
 
 object CleanColumnName {
     fun clean(name: String?): String {

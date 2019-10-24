@@ -1,9 +1,9 @@
-package com.ntconcepts.gcpdemo2.models
+package com.ntconcepts.gcpdemo2.dataprep.models
 
 import com.google.api.services.bigquery.model.TableRow
 import com.google.cloud.bigquery.Field
 import com.google.cloud.bigquery.StandardSQLTypeName
-import com.ntconcepts.gcpdemo2.utils.BigQueryField
+import com.ntconcepts.gcpdemo2.dataprep.utils.BigQueryField
 import java.io.Serializable
 
 data class Purchase(

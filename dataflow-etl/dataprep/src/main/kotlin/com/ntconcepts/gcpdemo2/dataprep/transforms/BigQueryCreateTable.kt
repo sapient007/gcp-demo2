@@ -1,7 +1,7 @@
-package com.ntconcepts.gcpdemo2.transforms
+package com.ntconcepts.gcpdemo2.dataprep.transforms
 
 import com.google.cloud.bigquery.*
-import com.ntconcepts.gcpdemo2.utils.BigQueryField
+import com.ntconcepts.gcpdemo2.dataprep.utils.BigQueryField
 import org.apache.beam.sdk.coders.BooleanCoder
 import org.apache.beam.sdk.options.ValueProvider
 import org.apache.beam.sdk.transforms.Create
