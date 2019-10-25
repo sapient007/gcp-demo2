@@ -12,8 +12,6 @@ plugins {
     kotlin("jvm") version "1.3.50"
 }
 
-
-
 allprojects {
     group = "com.ntconcepts"
     version = "1.0-SNAPSHOT"
@@ -31,6 +29,7 @@ subprojects {
     }
 
     dependencies {
+
         implementation(kotlin("stdlib-jdk8"))
         implementation("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
         implementation("org.apache.beam:beam-sdks-java-core:$beamVersion")
@@ -49,7 +48,6 @@ subprojects {
     }
 
     tasks.getByName<JavaExec>("run") {
-        main = "com.ntconcepts.gcpdemo2.MainKt"
         if (project.hasProperty("args")) {
             val a = project.properties.get("args")
             if (a is String) {
@@ -67,5 +65,11 @@ subprojects {
     }
     tasks.withType<KotlinCompile> {
         kotlinOptions.jvmTarget = "1.8"
+    }
+}
+
+project(":predict") {
+    dependencies {
+        compile(project(":dataprep"))
     }
 }
