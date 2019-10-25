@@ -11,7 +11,10 @@ import org.apache.beam.sdk.transforms.DoFn
 import org.apache.beam.sdk.values.KV
 import java.util.*
 
-class MapTableRowsFn(private val labelName: ValueProvider<String>, private val blacklisted: List<String>) :
+class MapTableRowsFn(
+    private val labelName: ValueProvider<String>,
+    private val blacklisted: List<String>
+) :
     DoFn<TableRow, KV<Int, String>>() {
 
     private lateinit var gson: Gson
@@ -46,7 +49,6 @@ class MapTableRowsFn(private val labelName: ValueProvider<String>, private val b
                 }
             }
         }
-        println(gson.toJson(out))
         c.output(KV.of(row["User_ID"].toString().toInt(), gson.toJson(out)))
 
     }

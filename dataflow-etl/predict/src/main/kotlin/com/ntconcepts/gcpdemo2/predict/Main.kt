@@ -2,6 +2,7 @@ package com.ntconcepts.gcpdemo2.predict
 
 import com.ntconcepts.gcpdemo2.predict.io.BigQuerySchema
 import com.ntconcepts.gcpdemo2.predict.transforms.MapTableRowsFn
+import com.ntconcepts.gcpdemo2.predict.transforms.PredictFn
 import org.apache.beam.sdk.Pipeline
 import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO
 import org.apache.beam.sdk.options.PipelineOptionsFactory
@@ -30,6 +31,8 @@ fun getPipeline(options: PredictOptions): Pipeline {
     ).apply(
         "MapTableRowsToSets",
         ParDo.of(MapTableRowsFn(options.labelName, listOf("User_ID"))).withSideInput("schema", schemaView)
+    ).apply(
+        ParDo.of(PredictFn(options.project, options.modelId, options.modelVersionId))
     )
 
     return p
@@ -59,7 +62,7 @@ fun getSelectedFields(): List<String> {
         "Age_55"
     )
 
-    for (i in 1..20) {
+    for (i in 0..20) {
         if (i < 10) {
             list.add(String.format("Occupation_%02d", i))
         } else {
@@ -98,6 +101,7 @@ fun getSelectedFields(): List<String> {
             list.add("Product_Category_3_$i")
         }
     }
+
 
     return list.toList()
 

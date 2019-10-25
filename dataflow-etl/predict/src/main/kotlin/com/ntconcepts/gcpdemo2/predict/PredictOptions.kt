@@ -30,4 +30,16 @@ interface PredictOptions : DataflowPipelineOptions {
     val labelName: ValueProvider<String>
 
     fun setLabelName(labelName: ValueProvider<String>)
+
+    @get:Description("ID of deployed model")
+    @get:Default.String("blackfriday")
+    val modelId: ValueProvider<String>
+
+    fun setModelId(modelId: ValueProvider<String>)
+
+    @get:Description("ID of version of deployed model")
+    @get:Default.String("v2")
+    val modelVersionId: ValueProvider<String>
+
+    fun setModelVersionId(modelVersionId: ValueProvider<String>)
 }
