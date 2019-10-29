@@ -77,24 +77,35 @@ class PredictFn(
         buffered.forEach {
             map[it.value.key!!] = it.value.value!!
         }
+        if (map.size == 0) return
 
         val json = makeJson(map)
 
-        val response = PredictionRequest.predict(projectId, modelId.get(), versionId.get(), json)
+        val response: String?
 
+        try {
+            response = PredictionRequest.predict(projectId, modelId.get(), versionId.get(), json)
+        } catch(e: Exception) {
+            throw e
+        }
         if (response == null) {
-            error("Prediction response was null: $response")
+            error("Prediction response was null")
         }
         val predictions = parseResponse(response)
+        if (predictions.predictions.isNullOrEmpty()) {
+            error("Predictions were null. Response: $response")
+        }
 
         predictions.predictions.forEachIndexed { index, i ->
             c.output(UserSummaryPredict(map.entries.elementAt(index).key, i))
         }
 
+
+
+
     }
 
     private fun parseResponse(json: String): PredictionResponse<Int> {
-
         return gson.fromJson<PredictionResponse<Int>>(json, PredictionResponse::class.java)
     }
 

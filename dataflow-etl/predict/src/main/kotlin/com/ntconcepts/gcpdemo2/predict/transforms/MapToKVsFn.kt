@@ -35,12 +35,14 @@ class MapToKVsFn(
 
         //Add the label value first
         out.add(JsonPrimitive((row[labelName.get()] as String).toInt()))
+        val keys = linkedSetOf<String>()
 
         row.forEach {
             val fieldName = it.key
             //Don't add the label again and don't add blacklisted cols
 
             if (it.key != labelName.get() && blacklisted.find { s -> s == fieldName } == null) {
+                keys.add(it.key)
                 //Smart cast based on schema type. All values come through as strings
                 when (schema[it.key]?.type) {
                     LegacySQLTypeName.FLOAT -> out.add(JsonPrimitive((it.value as String).toDouble()))
@@ -49,6 +51,9 @@ class MapToKVsFn(
                 }
             }
         }
+
+        println(keys)
+        println(keys.size)
         //We want to batch our prediction requests so the keys must all be 0
         //otherwise it only groups in PredictFn by UserID, so only one user
         //per prediction api request.

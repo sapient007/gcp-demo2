@@ -93,7 +93,7 @@ fun getSelectedFields(): List<String> {
         }
     }
 
-    for (i in 1..4) {
+    for (i in 0..4) {
         list.add("Stay_In_Current_City_Years_$i")
     }
 
