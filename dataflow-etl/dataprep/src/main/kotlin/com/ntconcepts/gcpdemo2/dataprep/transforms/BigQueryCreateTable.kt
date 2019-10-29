@@ -17,21 +17,39 @@ class BigQueryCreateTable(
     val dataset: ValueProvider<String>,
     val table: ValueProvider<String>,
     val dropTable: ValueProvider<Boolean>,
-    val encodedViewsMap: HashMap<String, PCollectionView<List<String>>>,
-    val encodedViewsList: ArrayList<PCollectionView<List<String>>?>,
-    val encodedCategories: Map<String, List<Class<*>>>,
+    val encodedViewsMap: HashMap<String, PCollectionView<List<String>>>?,
+    val encodedViewsList: ArrayList<PCollectionView<List<String>>?>?,
+    val encodedCategories: Map<String, List<Class<*>>>?,
     val clazz: Class<*>
 ) : PTransform<PBegin, PDone>() {
+
+    constructor(dataset: ValueProvider<String>,
+                table: ValueProvider<String>,
+                dropTable: ValueProvider<Boolean>,
+                clazz: Class<*>): this(
+        dataset,
+        table,
+        dropTable,
+        null,
+        null,
+        null,
+        clazz
+    )
 
 
     override fun expand(input: PBegin): PDone {
         //Hack bc passing PBegin wasn't working with ParDo/DoFn
+        val pardo = ParDo.of(
+            CreateBQTable(dataset, table, dropTable, encodedViewsMap, encodedCategories, clazz)
+        )
+                if (encodedViewsList != null ) {
+                    pardo.withSideInputs(encodedViewsList)
+                }
+
         input.apply(Create.of(true)).setCoder(BooleanCoder.of())
             .apply(
                 "CreateTable",
-                ParDo.of(
-                    CreateBQTable(dataset, table, dropTable, encodedViewsMap, encodedCategories, clazz)
-                ).withSideInputs(encodedViewsList)
+                pardo
             )
         return PDone.`in`(input.pipeline)
     }
@@ -40,8 +58,8 @@ class BigQueryCreateTable(
         val dataset: ValueProvider<String>,
         val table: ValueProvider<String>,
         val dropTable: ValueProvider<Boolean>,
-        val encodedViewsMap: HashMap<String, PCollectionView<List<String>>>,
-        val encodedCategories: Map<String, List<Class<*>>>,
+        val encodedViewsMap: HashMap<String, PCollectionView<List<String>>>?,
+        val encodedCategories: Map<String, List<Class<*>>>?,
         val clazz: Class<*>
     ) : DoFn<Boolean, Void>() {
         lateinit var bigquery: BigQuery
@@ -80,14 +98,14 @@ class BigQueryCreateTable(
             }
 
             //Add encoded fields
-            encodedViewsMap.forEach {
+            encodedViewsMap?.forEach {
                 val fieldName = it.key
                 val encodedDistinctVals = c.sideInput(it.value)
 
 
                 encodedDistinctVals.sorted().forEach {
                     //Only add the encoded field to the schema if it's whitelisted
-                    if ((encodedCategories[fieldName]
+                    if ((encodedCategories!![fieldName]
                             ?: error("Could not find $fieldName in list of encoded category fields")).contains(clazz)
                     ) {
                         fields.add(

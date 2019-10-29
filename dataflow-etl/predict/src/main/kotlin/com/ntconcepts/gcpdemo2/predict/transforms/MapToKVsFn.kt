@@ -11,11 +11,11 @@ import org.apache.beam.sdk.transforms.DoFn
 import org.apache.beam.sdk.values.KV
 import java.util.*
 
-class MapTableRowsFn(
+class MapToKVsFn(
     private val labelName: ValueProvider<String>,
     private val blacklisted: List<String>
 ) :
-    DoFn<TableRow, KV<Int, String>>() {
+    DoFn<TableRow, KV<Int, KV<Int, String>>>() {
 
     private lateinit var gson: Gson
 
@@ -49,7 +49,17 @@ class MapTableRowsFn(
                 }
             }
         }
-        c.output(KV.of(row["User_ID"].toString().toInt(), gson.toJson(out)))
+        //We want to batch our prediction requests so the keys must all be 0
+        //otherwise it only groups in PredictFn by UserID, so only one user
+        //per prediction api request.
+        //However, we also want to maintain our UserID -> feature pairing to
+        //combine predictions with UserIDs.
+        c.output(
+            KV.of(
+                0,
+                KV.of(row["User_ID"].toString().toInt(), gson.toJson(out))
+            )
+        )
 
     }
 }

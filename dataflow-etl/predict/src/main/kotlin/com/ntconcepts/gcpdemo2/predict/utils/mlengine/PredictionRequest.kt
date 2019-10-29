@@ -3,6 +3,7 @@ package com.ntconcepts.gcpdemo2.predict.utils.mlengine
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport
 import com.google.api.client.http.GenericUrl
+import com.google.api.client.http.HttpResponse
 import com.google.api.client.http.InputStreamContent
 import com.google.api.client.http.UriTemplate
 import com.google.api.client.json.jackson2.JacksonFactory
@@ -14,15 +15,16 @@ import java.io.ByteArrayInputStream
 
 object PredictionRequest {
 
-    fun predict(projectId: String, modelId: String, versionId: String, content: String) {
+    fun predict(projectId: String, modelId: String, versionId: String, content: String): String? {
         val httpTransport = GoogleNetHttpTransport.newTrustedTransport()
         val jsonFactory = JacksonFactory.getDefaultInstance()
         val discovery =
             Discovery.Builder(httpTransport, jsonFactory, null).setApplicationName("gcpdemo2predict").build()
 
         val api = discovery.apis().getRest("ml", "v1").execute()
-        val methods = api.resources["projects"]?.getMethods()
+        val methods = api.resources["projects"]?.methods
         val method: RestMethod?
+        var response: HttpResponse? = null
         if (methods != null) {
             method = methods["predict"]
 
@@ -32,8 +34,8 @@ object PredictionRequest {
                 "name", String.format("projects/%s/models/%s/versions/%s", projectId, modelId, versionId)
             )
 
-            val url = GenericUrl(UriTemplate.expand(api.baseUrl + method?.getPath(), param, true))
-            println(url)
+            val url = GenericUrl(UriTemplate.expand(api.baseUrl + method?.path, param, true))
+//            println(url)
 
             val contentType = "application/json"
 
@@ -41,11 +43,18 @@ object PredictionRequest {
 
             val credential = GoogleCredential.getApplicationDefault()
             val requestFactory = httpTransport.createRequestFactory(credential)
-            val request = requestFactory.buildRequest(method?.getHttpMethod(), url, stream)
+            val request = requestFactory.buildRequest(method?.httpMethod, url, stream).setConnectTimeout(10000)
+                .setReadTimeout(60000)
 
-            val response = request.execute().parseAsString()
-            println(response)
+            response = request.execute()
+            if (!response.isSuccessStatusCode) {
+                error("Non-200 response from prediction API: ${response.statusMessage} (${response.statusCode}): ${response.parseAsString()} ")
+            }
+
+//            println(response)
+
         }
+        return response?.parseAsString()
 
     }
 }
