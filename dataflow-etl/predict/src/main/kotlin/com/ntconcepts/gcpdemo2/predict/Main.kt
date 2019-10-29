@@ -70,7 +70,7 @@ fun getSelectedFields(): List<String> {
     val list = arrayListOf(
         "User_ID",
         "Purchase_Total",
-        "Purchase_Count",
+//        "Purchase_Count",
         "City_Category_a",
         "City_Category_b",
         "City_Category_c",
