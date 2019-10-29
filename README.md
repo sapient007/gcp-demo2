@@ -71,7 +71,7 @@ docker push gcr.io/ml-sandbox-1-191918/gcp-demo2:training
 ```bash
 gcloud ai-platform jobs submit training "blackfriday_"$(date +"%Y%m%d_%H%M%S") \
     --region us-east1 \
-    --job-dir gs://gcp-cert-demo-2/output \
+    --job-dir gs://gcp-cert-demo-2/model/output \
     --master-image-uri gcr.io/ml-sandbox-1-191918/gcp-demo2:training
 ```
 

@@ -13,11 +13,11 @@ def process_data():
     x_val = test_raw.drop(['Purchase_Total'], axis=1)
     y_val = test_raw['Purchase_Total']
 
-    return x_train, y_train, x_val, y_val
+    return x_train, y_train, x_val, y_val, train_raw.drop(['Purchase_Total', ], axis=1).columns
 
 
-def train_mlp(x_train, y_train, x_val, y_val, params):
-    dtrain = xgb.DMatrix(x_train, y_train)
+def train_mlp(x_train, y_train, x_val, y_val, cols, params):
+    dtrain = xgb.DMatrix(x_train, label=y_train, feature_names=cols)
     dtest = xgb.DMatrix(x_val, y_val)
     bst = xgb.train({}, dtrain, 20, [(dtest, "test")])
     return bst
