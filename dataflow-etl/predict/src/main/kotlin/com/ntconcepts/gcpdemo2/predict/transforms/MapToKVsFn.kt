@@ -34,8 +34,8 @@ class MapToKVsFn(
         val out = JsonArray()
 
         //Add the label value first
-        out.add(JsonPrimitive((row[labelName.get()] as String).toInt()))
-        val keys = linkedSetOf<String>()
+//        out.add(JsonPrimitive((row[labelName.get()] as String).toInt()))
+        val keys = arrayListOf<String>()
 
         row.forEach {
             val fieldName = it.key
@@ -52,8 +52,6 @@ class MapToKVsFn(
             }
         }
 
-        println(keys)
-        println(keys.size)
         //We want to batch our prediction requests so the keys must all be 0
         //otherwise it only groups in PredictFn by UserID, so only one user
         //per prediction api request.
