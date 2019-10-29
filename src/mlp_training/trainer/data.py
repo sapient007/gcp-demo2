@@ -12,7 +12,7 @@ def get_table_ref():
 def get_read_options(partition_name):
     read_options = bigquery_storage_v1beta1.types.TableReadOptions()
     read_options.selected_fields.append("Purchase_Total")
-    read_options.selected_fields.append("Purchase_Count")
+    # read_options.selected_fields.append("Purchase_Count")
     for x in range(21):
         if (x < 10):
             read_options.selected_fields.append("Occupation_%02d" % (x))

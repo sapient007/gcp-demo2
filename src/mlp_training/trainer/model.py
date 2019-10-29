@@ -1,10 +1,12 @@
 from google.cloud import storage
+from typing import Dict, Tuple, Sequence, List
 import os
 import xgboost as xgb
 import data
+import numpy as np
 
 
-def process_data():
+def process_data() -> Tuple[np.array, np.array, np.array, np.array, List[str]]:
     train_raw = data.get_data_partition("train")
     test_raw = data.get_data_partition("test")
 
@@ -16,13 +18,15 @@ def process_data():
     return x_train, y_train, x_val, y_val, train_raw.drop(['Purchase_Total', ], axis=1).columns
 
 
-def train_mlp(x_train, y_train, x_val, y_val, cols, params):
+def train_mlp(x_train, y_train, x_val, y_val, cols, params) -> Tuple[xgb.Booster, dict]:
     dtrain = xgb.DMatrix(x_train, label=y_train, feature_names=cols)
     dtest = xgb.DMatrix(x_val, y_val)
-    bst = xgb.train({}, dtrain, 20, [(dtest, "test")])
-    return bst
+    evals_result = {}
+    bst = xgb.train({}, dtrain, 20, [(dtrain, "dtrain"),
+            (dtest, "dtest")], evals_result=evals_result)
+    return bst, evals_result
 
-# def recall_metric(y_true, y_pred):
+# def recall_metric(y_true, y_pred) -> int:
 #     """
 #     TODO: description
 #     :param y_true:
@@ -37,7 +41,7 @@ def train_mlp(x_train, y_train, x_val, y_val, cols, params):
 #     return recall
 
 
-# def precision_metric(y_true, y_pred):
+# def precision_metric(y_true, y_pred) -> int:
 #     """
 #     TODO: description
 #     :param y_true:
