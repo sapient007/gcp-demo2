@@ -33,16 +33,11 @@ class MapToKVsFn(
 
         val out = JsonArray()
 
-        //Add the label value first
-//        out.add(JsonPrimitive((row[labelName.get()] as String).toInt()))
-        val keys = arrayListOf<String>()
-
         row.forEach {
             val fieldName = it.key
             //Don't add the label again and don't add blacklisted cols
 
             if (it.key != labelName.get() && blacklisted.find { s -> s == fieldName } == null) {
-                keys.add(it.key)
                 //Smart cast based on schema type. All values come through as strings
                 when (schema[it.key]?.type) {
                     LegacySQLTypeName.FLOAT -> out.add(JsonPrimitive((it.value as String).toDouble()))

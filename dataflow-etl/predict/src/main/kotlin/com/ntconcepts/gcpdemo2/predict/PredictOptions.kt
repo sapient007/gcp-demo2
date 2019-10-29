@@ -38,7 +38,7 @@ interface PredictOptions : DataflowPipelineOptions {
     fun setModelId(modelId: ValueProvider<String>)
 
     @get:Description("ID of version of deployed model")
-    @get:Default.String("v2")
+    @get:Default.String("v6")
     val modelVersionId: ValueProvider<String>
 
     fun setModelVersionId(modelVersionId: ValueProvider<String>)
