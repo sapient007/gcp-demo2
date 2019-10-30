@@ -2,9 +2,6 @@ from google.cloud import storage
 from typing import Dict, Tuple, Sequence, List
 import os
 import xgboost as xgb
-import tensorflow.keras.backend as K
-from sklearn.model_selection import KFold
-from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import explained_variance_score
 import data
@@ -53,7 +50,7 @@ def accuracy(model: xgb.XGBRegressor, x_val, y_val) -> float:
 
 
 def variance_score(model: xgb.XGBRegressor, x_test: np.array, y_test: np.array) -> float:
-    y_pred = model.predict(x_test)
+    predictions = model.predict(x_test)
     return explained_variance_score(y_test, y_pred)
 
 
@@ -62,11 +59,11 @@ def r2(model: xgb.XGBRegressor, x_test: np.array, y_test: np.array) -> float:
 
 
 # https://machinelearningmastery.com/evaluate-gradient-boosting-models-xgboost-python/
-def kfold_accuracy(bst: xgb.Booster, x_test: np.array, y_test: np.array, n_jobs=4) -> Tuple[float]:
-    model = xgb.XGBClassifier(n_jobs=n_jobs)
-    kfold = KFold(n_splits=10, random_state=7)
-    results = cross_val_score(model, x_test, y_test, cv=kfold)
-    return results.mean() * 100, results.std() * 100
+# def kfold_accuracy(bst: xgb.Booster, x_test: np.array, y_test: np.array, n_jobs=4) -> Tuple[float]:
+#     model = xgb.XGBClassifier(n_jobs=n_jobs)
+#     kfold = KFold(n_splits=10, random_state=7)
+#     results = cross_val_score(model, x_test, y_test, cv=kfold)
+#     return results.mean() * 100, results.std() * 100
 
 
 def recall_metric(y_true, y_pred) -> int:
