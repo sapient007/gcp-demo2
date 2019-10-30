@@ -3,3 +3,4 @@ xgboost==0.81
 pandas==0.24.0
 google-cloud-bigquery-storage[pandas,fastavro]
 google-cloud-storage==1.20.0
+tensorflow==2.0.0

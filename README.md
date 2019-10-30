@@ -59,7 +59,7 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
 ### Building the container
 
 ```bash
-docker build -f .\src\mlp_training\Dockerfile -t gcr.io/ml-sandbox-1-191918/gcp-demo2:training ./
+docker build -f .\src\xgb_training\Dockerfile -t gcr.io/ml-sandbox-1-191918/gcp-demo2:training ./
 ```
 
 ```bash
