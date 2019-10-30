@@ -1,11 +1,11 @@
-from google.cloud import storage
-from typing import Dict, Tuple, Sequence, List
 import os
+import data
+import numpy as np
 import xgboost as xgb
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import explained_variance_score
-import data
-import numpy as np
+from google.cloud import storage
+from typing import Tuple, List
 
 
 def process_data() -> Tuple[np.array, np.array, np.array, np.array, List[str]]:
