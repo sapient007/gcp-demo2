@@ -31,7 +31,9 @@ def train(x_train: np.array, y_train: np.array, x_test: np.array, y_test: np.arr
 
 
 def fit_regressor(file: str, x_train: np.array, y_train: np.array, x_test: np.array, y_test: np.array, n_jobs=4) -> xgb.XGBRegressor:
-    model = xgb.XGBRegressor(n_jobs=n_jobs)
+    model = xgb.XGBRegressor(
+        n_jobs=n_jobs
+    )
     model.load_model(file)
     model.fit(x_train, y_train)
     return model

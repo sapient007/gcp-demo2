@@ -25,16 +25,12 @@ def evaluate(filename: str, x_train: np.array, y_train: np.array, x_val: np.arra
     model.delete_model(filename)
 
     r2 = model.r2(xg_reg, x_val, y_val)
-    print("R^2: %.2f%%" % (r2))
+    print("R^2: %.2f" % (r2))
 
     y_pred = model.predict_regressor(xg_reg, x_val)
 
     score = model.variance_score(y_pred, y_val)
     print("Explained variance regression score: %.2f%%" % (score))
-
-    xgb.plot_importance(xg_reg)
-    plt.rcParams['figure.figsize'] = [5, 5]
-    plt.show()
 
 
 if __name__ == '__main__':
