@@ -8,9 +8,9 @@ from google.cloud import storage
 from typing import Tuple, List
 
 
-def process_data() -> Tuple[np.array, np.array, np.array, np.array, List[str]]:
+def process_data(test_partition_name="test") -> Tuple[np.array, np.array, np.array, np.array, List[str]]:
     train_raw = data.get_data_partition("train")
-    test_raw = data.get_data_partition("test")
+    test_raw = data.get_data_partition(test_partition_name)
 
     x_train = train_raw.drop(['Purchase_Total', ], axis=1)
     y_train = train_raw['Purchase_Total']
@@ -30,7 +30,7 @@ def train(x_train: np.array, y_train: np.array, x_test: np.array, y_test: np.arr
     return bst, evals_result
 
 
-def fit_regressor(file: str, x_train: np.array, y_train: np.array, x_test: np.array, y_test: np.array, n_jobs=4) -> xgb.XGBRegressor:
+def fit_regressor(file: str, x_train: np.array, y_train: np.array, n_jobs=4) -> xgb.XGBRegressor:
     model = xgb.XGBRegressor(
         n_jobs=n_jobs
     )

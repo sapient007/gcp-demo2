@@ -1,7 +1,5 @@
 import argparse
 import model
-import matplotlib.pyplot as plt
-import xgboost as xgb
 import numpy as np
 
 
