@@ -50,7 +50,7 @@ def accuracy(model: xgb.XGBRegressor, x_val, y_val) -> float:
 
 
 def variance_score(model: xgb.XGBRegressor, x_test: np.array, y_test: np.array) -> float:
-    predictions = model.predict(x_test)
+    y_pred = model.predict(x_test)
     return explained_variance_score(y_test, y_pred)
 
 
