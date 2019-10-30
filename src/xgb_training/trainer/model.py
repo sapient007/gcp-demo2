@@ -30,27 +30,25 @@ def train(x_train: np.array, y_train: np.array, x_test: np.array, y_test: np.arr
     return bst, evals_result
 
 
-def fit_regressor(file: str, x_train: np.array, y_train: np.array, x_test: np.array, y_test: np.array, n_jobs=4):
+def fit_regressor(file: str, x_train: np.array, y_train: np.array, x_test: np.array, y_test: np.array, n_jobs=4) -> xgb.XGBRegressor:
     model = xgb.XGBRegressor(n_jobs=n_jobs)
     model.load_model(file)
     model.fit(x_train, y_train)
     return model
 
 
-def predict(bst: xgb.Booster, x_test: np.array) -> np.array:
-    dtest = xgb.DMatrix(x_test)
-    return bst.predict(dtest, ntree_limit=20)
+def predict_regressor(model: xgb.XGBRegressor, x_test: np.array) -> np.array:
+    return model.predict(x_test)
 
 
-def accuracy(model: xgb.XGBRegressor, x_val, y_val) -> float:
-    y_pred = model.predict(x_test)
-    predictions = [round(value) for value in y_pred]
-    accuracy = accuracy_score(y_test, predictions)
-    return accuracy * 100.0
+# def accuracy(model: xgb.XGBRegressor, x_val, y_val) -> float:
+#     y_pred = model.predict(x_test)
+#     predictions = [round(value) for value in y_pred]
+#     accuracy = accuracy_score(y_test, predictions)
+#     return accuracy * 100.0
 
 
-def variance_score(model: xgb.XGBRegressor, x_test: np.array, y_test: np.array) -> float:
-    y_pred = model.predict(x_test)
+def variance_score(y_pred: np.array, y_test: np.array) -> float:
     return explained_variance_score(y_test, y_pred)
 
 
