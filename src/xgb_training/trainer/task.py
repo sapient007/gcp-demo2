@@ -1,5 +1,9 @@
 import argparse
 import model
+import matplotlib.pyplot as plt
+import xgboost as xgb
+import numpy as np
+
 
 filename = "model.bst"
 
@@ -13,17 +17,22 @@ def train_and_evaluate(args):
     x_train, y_train, x_val, y_val, cols = model.process_data()
     bst, _ = model.train(x_train, y_train, x_val, y_val, cols, args)
     model.save_model(bst, "gcp-cert-demo-2", "model", filename)
+    evaluate(filename, x_train, y_train, x_val, y_val)
 
-    accuracy = model.accuracy(filename, x_train, y_train, y_val, x_val)
-    print("Accuracy: %.2f%%" % (accuracy))
 
+def evaluate(filename: str, x_train: np.array, y_train: np.array, x_val: np.array, y_val: np.array, args):
+    xg_reg = model.fit_regressor(filename, x_train, y_train, x_val, y_val)
     model.delete_model(filename)
 
-    # acc, std = model.kfold_accuracy(bst, x_val, y_val)
-    # print("Accuracy: %.2f%% (%.2f%%)" % (acc, std))
+    r2 = model.r2(xg_reg, x_val, y_val)
+    print("R^2: %.2f%%" % (r2))
 
-    # y_preds = model.predict(bst, x_val)
-    # print(model.precision_metric(y_val, y_preds))
+    score = model.variance_score(xg_reg, x_val, y_val)
+    print("Explained variance regression score: %.2f%%" % (score))
+
+    xgb.plot_importance(xg_reg)
+    plt.rcParams['figure.figsize'] = [5, 5]
+    plt.show()
 
 
 if __name__ == '__main__':

@@ -6,6 +6,7 @@ import tensorflow.keras.backend as K
 from sklearn.model_selection import KFold
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import explained_variance_score
 import data
 import numpy as np
 
@@ -26,9 +27,17 @@ def train(x_train: np.array, y_train: np.array, x_test: np.array, y_test: np.arr
     dtrain = xgb.DMatrix(x_train, label=y_train, feature_names=cols)
     dtest = xgb.DMatrix(x_test, y_test)
     evals_result = {}
+
     bst = xgb.train({}, dtrain, 20, [(dtrain, "dtrain"),
             (dtest, "dtest")], evals_result=evals_result)
     return bst, evals_result
+
+
+def fit_regressor(file: str, x_train: np.array, y_train: np.array, x_test: np.array, y_test: np.array, n_jobs=4):
+    model = xgb.XGBRegressor(n_jobs=n_jobs)
+    model.load_model(file)
+    model.fit(x_train, y_train)
+    return model
 
 
 def predict(bst: xgb.Booster, x_test: np.array) -> np.array:
@@ -36,14 +45,20 @@ def predict(bst: xgb.Booster, x_test: np.array) -> np.array:
     return bst.predict(dtest, ntree_limit=20)
 
 
-def accuracy(file: str, x_train: np.array, y_train: np.array, x_test: np.array, y_test: np.array, n_jobs=4) -> float:
-    model = xgb.XGBClassifier(n_jobs=n_jobs)
-    model.load_model(file)
-    model.fit(x_train, y_train)
+def accuracy(model: xgb.XGBRegressor, x_val, y_val) -> float:
     y_pred = model.predict(x_test)
     predictions = [round(value) for value in y_pred]
     accuracy = accuracy_score(y_test, predictions)
     return accuracy * 100.0
+
+
+def variance_score(model: xgb.XGBRegressor, x_test: np.array, y_test: np.array) -> float:
+    y_pred = model.predict(x_test)
+    return explained_variance_score(y_test, y_pred)
+
+
+def r2(model: xgb.XGBRegressor, x_test: np.array, y_test: np.array) -> float:
+    return model.score(x_test, y_test)
 
 
 # https://machinelearningmastery.com/evaluate-gradient-boosting-models-xgboost-python/
