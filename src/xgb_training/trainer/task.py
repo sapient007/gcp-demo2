@@ -17,7 +17,7 @@ def train_and_evaluate(args):
     x_train, y_train, x_val, y_val, cols = model.process_data()
     bst, _ = model.train(x_train, y_train, x_val, y_val, cols, args)
     model.save_model(bst, "gcp-cert-demo-2", "model", filename)
-    evaluate(filename, x_train, y_train, x_val, y_val)
+    evaluate(filename, x_train, y_train, x_val, y_val, args)
 
 
 def evaluate(filename: str, x_train: np.array, y_train: np.array, x_val: np.array, y_val: np.array, args):
