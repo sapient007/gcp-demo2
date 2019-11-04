@@ -103,19 +103,19 @@ Make sure the GCP Container Registry API is enabled first: https://cloud.google.
 **Windows**
 
 ```powershell
-docker run --rm -v "$Env:UserProfile\AppData\Roaming\gcloud:/root/.config/gcloud"  -v '.\dataflow-etl\:/opt/etl' -w /opt/etl openjdk:8 ./gradlew jib --image gcr.io/$PROJECT_ID/$REPO_NAME"
+docker run --rm -v "$Env:UserProfile\AppData\Roaming\gcloud:/root/.config/gcloud"  -v '.\dataflow-etl\:/opt/etl' -w /opt/etl openjdk:8 ./gradlew :dataprep:jib --image gcr.io/$PROJECT_ID/$REPO_NAME:dataprep"
 ```
 
 **macOS and Linux**
 
 ```bash
-docker run --rm -v "~/.config/gcloud:/root/.config/gcloud"  -v './dataflow-etl\:/opt/etl' -w /opt/etl openjdk:8 ./gradlew jib --image gcr.io/$PROJECT_ID/$REPO_NAME"
+docker run --rm -v "~/.config/gcloud:/root/.config/gcloud"  -v './dataflow-etl\:/opt/etl' -w /opt/etl openjdk:8 ./gradlew :dataprep:jib --image gcr.io/$PROJECT_ID/$REPO_NAME:dataprep"
 ```
 
 ###### Using a service account
 
 ```bash
-docker run --rm -v "$LOCATION_OF_SA_JSON:/opt/sa/key.json"  -v './dataflow-etl\:/opt/etl' -e GOOGLE_APPLICATION_CREDENTIALS=/opt/sa/key.json -w /opt/etl openjdk:8 ./gradlew jib --image gcr.io/$PROJECT_ID/$REPO_NAME"
+docker run --rm -v "$LOCATION_OF_SA_JSON:/opt/sa/key.json"  -v './dataflow-etl\:/opt/etl' -e GOOGLE_APPLICATION_CREDENTIALS=/opt/sa/key.json -w /opt/etl openjdk:8 ./gradlew :dataprep:jib --image gcr.io/$PROJECT_ID/$REPO_NAME:dataprep"
 ```
 
 ##### Step 2: Start the job from the container
@@ -125,19 +125,19 @@ docker run --rm -v "$LOCATION_OF_SA_JSON:/opt/sa/key.json"  -v './dataflow-etl\:
 **Windows**
 
 ```powershell
-docker run --rm -v "$Env:UserProfile\AppData\Roaming\gcloud:/root/.config/gcloud" gcr.io/$PROJECT_ID/$REPO_NAME --project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --experiments=shuffle_mode=service --jobName=$JOB_NAME
+docker run --rm -v "$Env:UserProfile\AppData\Roaming\gcloud:/root/.config/gcloud" gcr.io/$PROJECT_ID/$REPO_NAME --project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --jobName=$JOB_NAME --tempLocation=$STAGING_LOCATION --trainDataSource=$DATA_LOCATION
 ```
 
 **macOS and Linux**
 
 ```bash
-docker run --rm -v "~/.config/gcloud:/root/.config/gcloud" gcr.io/$PROJECT_ID/$REPO_NAME --project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --experiments=shuffle_mode=service --jobName=$JOB_NAME
+docker run --rm -v "~/.config/gcloud:/root/.config/gcloud" gcr.io/$PROJECT_ID/$REPO_NAME --project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --jobName=$JOB_NAME --tempLocation=$STAGING_LOCATION --trainDataSource=$DATA_LOCATION
 ```
 
 ###### Using a service account
 
 ```bash
-docker run --rm -v "$LOCATION_OF_SA_JSON:/opt/sa/key.json" -e GOOGLE_APPLICATION_CREDENTIALS=/opt/sa/key.json gcr.io/$PROJECT_ID/$REPO_NAME --project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --experiments=shuffle_mode=service --jobName=$JOB_NAME
+docker run --rm -v "$LOCATION_OF_SA_JSON:/opt/sa/key.json" -e GOOGLE_APPLICATION_CREDENTIALS=/opt/sa/key.json gcr.io/$PROJECT_ID/$REPO_NAME --project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --jobName=$JOB_NAME --tempLocation=$STAGING_LOCATION --trainDataSource=$DATA_LOCATION
 ```
 
 ## Training
