@@ -1,15 +1,10 @@
 from setuptools import find_packages
 from setuptools import setup
 
-
 REQUIRED_PACKAGES = [
-    'scikit-learn==0.20.2',
-    'xgboost==0.81',
-    'pandas==0.24.0',
     'google-cloud-bigquery-storage[pandas,fastavro]',
     'google-cloud-storage==1.20.0'
 ]
-
 
 setup(
     name='trainer',

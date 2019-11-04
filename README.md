@@ -6,7 +6,7 @@ predicting the amount of money a shopper will spend on Black Friday.
 ## Setup
 
 ### Requirements
-Python 3.7.4  
+Python 3.5  
 Package Manager - Anaconda3
 ### Install Anaconda
 [Anaconda Distribution](https://docs.anaconda.com/anaconda/install/)
@@ -54,9 +54,151 @@ Linux -
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
 ```
 
+## Data pipeline
+
+ETL is done by a Google Cloud Dataflow job in `./dataflow-etl`. The job will read data from the `bigquery-public-data:chicago_taxi_trips.taxi_trips` public dataset and prepare data for both training and predictions. The job will output data to Bigquery. 
+
+### ETL prerequisites
+
+You will need to create a Bigquery dataset in your project. If you use the default job options, create a datased named `chicagotaxi`. It can be named anything and customized in job options.
+
+#### Using the shuffle service
+
+If you want to use the Dataflow shuffle service (`--experiments=shuffle_mode=service`), you will need to run your job in a GCP region that supports the service: https://cloud.google.com/dataflow/docs/guides/deploying-a-pipeline#cloud-dataflow-shuffle
+
+#### Instance types and worker counts
+
+The job processes more than 250 GB of internal data. Using 6 n1-highmem-4 instances takes the job about an hour to finish.
+
+### Dataflow options
+
+In addition to the [Cloud Dataflow Runner options](https://beam.apache.org/documentation/runners/dataflow/#pipeline-options), these options can be customized:
+
+- `--outputDataset`: Bigquery output dataset. Default: chicagotaxi
+- `--outputTable`: Bigquery output table. Default: finaltaxi_encoded
+- `--outputTableSpec`: Bigquery output tablespec. Default: chicagotaxi.finaltaxi_encoded
+- `--inputTableSpec`: Bigquery input tablespec. Default: bigquery-public-data:chicago_taxi_trips.taxi_trips
+- `--mlPartitionTrainWeight`: Weight to apply to random partitioning of training data. Example: 70 for 70 percent. Default: 70.0
+- `--mlPartitionTestWeight`: Weight to apply to random partitioning of testing data. Example: 15 for 15 percent. Default: 15.0
+- `--mlPartitionValidationWeight`: Weight to apply to random partitioning of validation data. Example: 15 for 15 percent. Default: 15.0
+- `--mapCenterLat` Latitude in radians to center row latitude values on. Example: 41.8839. Default: 41.8839 (Chicago City Hall)
+- `--mapCenterLong`: Longitude in radians to center row latitude values on. Example: -87.6319. Default: -87.6319 (Chicago City Hall)
+- `--sampleSize`: Percent of data to sample. Example: 0-100. Default: 100
+
+### Start a job in an existing JDK 8 environment
+
+If you already have a JDK 8 development environment setup, Dataflow jobs can be started by running (from inside `./dataflow-etl`):
+
+```bash
+./gradlew run -Pargs="--project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --experiments=shuffle_mode=service"
+```
+
+### Creating a container via Docker and start job in container (recommended)
+
+#### Step 1: Create the container
+
+Make sure the GCP Container Registry API is enabled first: https://cloud.google.com/container-registry/docs/quickstart
+
+##### Using application default credentials
+
+###### Windows
+
+```powershell
+docker run --rm -v "$Env:UserProfile\AppData\Roaming\gcloud:/root/.config/gcloud"  -v '.\dataflow-etl\:/opt/etl' -w /opt/etl openjdk:8 ./gradlew jib --image gcr.io/$PROJECT_ID/$REPO_NAME"
+```
+
+###### macOS and Linux
+
+```bash
+docker run --rm -v "~/.config/gcloud:/root/.config/gcloud"  -v './dataflow-etl\:/opt/etl' -w /opt/etl openjdk:8 ./gradlew jib --image gcr.io/$PROJECT_ID/$REPO_NAME"
+```
+
+##### Using a service account
+
+```bash
+docker run --rm -v "$LOCATION_OF_SA_JSON:/opt/sa/key.json"  -v './dataflow-etl\:/opt/etl' -e GOOGLE_APPLICATION_CREDENTIALS=/opt/sa/key.json -w /opt/etl openjdk:8 ./gradlew jib --image gcr.io/$PROJECT_ID/$REPO_NAME"
+```
+
+#### Step 2: Start the job from the container
+
+##### Using application default credentials
+
+###### Windows
+
+```powershell
+docker run --rm -v "$Env:UserProfile\AppData\Roaming\gcloud:/root/.config/gcloud" gcr.io/$PROJECT_ID/$REPO_NAME --project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --experiments=shuffle_mode=service --jobName=$JOB_NAME
+```
+
+###### macOS and Linux
+
+```bash
+docker run --rm -v "~/.config/gcloud:/root/.config/gcloud" gcr.io/$PROJECT_ID/$REPO_NAME --project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --experiments=shuffle_mode=service --jobName=$JOB_NAME
+```
+
+##### Using a service account
+
+```bash
+docker run --rm -v "$LOCATION_OF_SA_JSON:/opt/sa/key.json" -e GOOGLE_APPLICATION_CREDENTIALS=/opt/sa/key.json gcr.io/$PROJECT_ID/$REPO_NAME --project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --experiments=shuffle_mode=service --jobName=$JOB_NAME
+```
+
+### Start a job via Docker
+
+#### Using application default credentials
+
+##### Windows
+
+```powershell
+docker run --rm -v "$Env:UserProfile\AppData\Roaming\gcloud:/root/.config/gcloud"  -v '.\dataflow-etl\:/opt/etl' -w /opt/etl openjdk:8 ./gradlew run -Pargs="--project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --experiments=shuffle_mode=service  --jobName=$JOB_NAME"
+```
+
+##### macOS and Linux
+
+```bash
+docker run --rm -v "~/.config/gcloud:/root/.config/gcloud"  -v './dataflow-etl\:/opt/etl' -w /opt/etl openjdk:8 ./gradlew run -Pargs="--project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --experiments=shuffle_mode=service  --jobName=$JOB_NAME"
+```
+
+#### Using a service account
+
+```bash
+docker run --rm -v "$LOCATION_OF_SA_JSON:/opt/sa/key.json"  -v './dataflow-etl\:/opt/etl' -e GOOGLE_APPLICATION_CREDENTIALS=/opt/sa/key.json -w /opt/etl openjdk:8 ./gradlew run -Pargs="--project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --experiments=shuffle_mode=service  --jobName=$JOB_NAME"
+
 ## Training
 
-### Building the container
+A subset of hyperparameters are available to set as Python arguments for the training job:
+
+- `--eta`
+- `--max_depth`
+- `--subsample`
+- `--lambda`
+- `--alpha`
+- `--tree_method`
+- `--predictor`
+- `--n_jobs`
+- `--objective`
+- `--eval_metric`
+
+### Use gcloud to package and start training job
+
+This method is the easiest. Run the command from inside `./src/xgb_training`.
+
+```bash
+gcloud ai-platform jobs submit training "blackfriday_"$(date +"%Y%m%d_%H%M%S") \
+    --region us-east1 \
+    --job-dir gs://$BUCKET_NAME/model/output \
+    --staging-bucket gs://$BUCKET_NAME \
+    --package-path=xgb_training/trainer \
+    --module-name trainer.task \
+    --runtime-version 1.14 \
+    --python-version 3.5 \
+    --scale-tier CUSTOM \
+    --master-machine-type n1-standard-4 \
+    -- $BUCKET_NAME \
+    -- --n_jobs=4
+```
+
+### Using a container
+
+The job can also be started from a custom-built container. Use this method if AI Platform runtime updates cause dependency problems. It requires enabling the Container Registry API.
 
 #### Build the container with the training source code
 
@@ -75,28 +217,18 @@ docker push gcr.io/$PROJECT_ID/gcp-demo2:training
 ```bash
 gcloud ai-platform jobs submit training "blackfriday_"$(date +"%Y%m%d_%H%M%S") \
     --region us-east1 \
-    --job-dir gs://gcp-cert-demo-2/model/output \
-    --staging-bucket gs://gcp-cert-demo-2 \
-    --package-path=xgb_training/trainer \
-    --module-name trainer.task \
-    --runtime-version 1.14 \
-    --python-version 3.5 \
-    --scale-tier CUSTOM \
-    --master-machine-type n1-standard-4 \
-    -- gcp-cert-demo-2 \
-    -- --n_jobs=4
-
-gcloud ai-platform jobs submit training "blackfriday_"$(date +"%Y%m%d_%H%M%S") \
-    --region us-east1 \
-    --job-dir gs://gcp-cert-demo-2/model/output \
+    --job-dir gs://$BUCKET_NAME/model/output \
     --master-image-uri gcr.io/$PROJECT_ID/gcp-demo2:training \
     --scale-tier CUSTOM \
-    --master-machine-type n1-standard-4
+    --master-machine-type n1-standard-4 \
+    -- $BUCKET_NAME --n_jobs=4
 ```
 
 ## Deployment
 
 ### Creating the deployment 
+
+Whichever method chosen to train the model, a pickled version of the model is saved into GCS that can be used to create an online prediction deployment.
 
 ```bash
 gcloud ai-platform versions create $VERSION_NAME \

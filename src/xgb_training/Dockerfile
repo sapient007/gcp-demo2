@@ -9,4 +9,4 @@ COPY src/xgb_training /opt/gcp-demo2/xgb-training
 ARG BUCKET_NAME
 ENV BUCKET=BUCKET_NAME
 
-ENTRYPOINT ["python", "trainer/task.py", "$BUCKET_NAME"]
+ENTRYPOINT ["python", "-m", "trainer.task"]
