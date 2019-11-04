@@ -22,6 +22,12 @@ data class UserSummaryPredict(
         HashMap<String, Int>()
     )
 
+    constructor(User_ID: Int?, Purchase_Total_Predicted: Int?) : this(
+        User_ID,
+        Purchase_Total_Predicted,
+        HashMap<String, Int>()
+    )
+
     companion object : OutputCompanionInterface {
         override fun getValueAsString(name: String, obj: OutputInterface): String? =
             OutputBase.getValueAsString(name, obj)

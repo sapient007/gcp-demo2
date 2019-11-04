@@ -38,8 +38,26 @@ interface PredictOptions : DataflowPipelineOptions {
     fun setModelId(modelId: ValueProvider<String>)
 
     @get:Description("ID of version of deployed model")
-    @get:Default.String("v2")
+    @get:Default.String("v6")
     val modelVersionId: ValueProvider<String>
 
     fun setModelVersionId(modelVersionId: ValueProvider<String>)
+
+    @get:Description("Bigquery predicted user summaries output table")
+    @get:Default.String("user_summaries_pred")
+    val outputUserPredictedTable: ValueProvider<String>
+
+    fun setOutputUserPredictedTable(table: ValueProvider<String>)
+
+    @get:Description("Bigquery predicted user summaries output table spec")
+    @get:Default.String("blackfriday.user_summaries_pred")
+    val outputUserPredictedTableSpec: ValueProvider<String>
+
+    fun setOutputUserPredictedTableSpec(table: ValueProvider<String>)
+
+    @get:Description("Drop output table when job starts")
+    @get:Default.Boolean(true)
+    val dropTable: ValueProvider<Boolean>
+
+    fun setDropTable(dropTable: ValueProvider<Boolean>)
 }
