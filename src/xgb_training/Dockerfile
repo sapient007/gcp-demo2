@@ -6,4 +6,7 @@ COPY src/xgb_training/requirements.txt /opt/gcp-demo2/xgb-training/requirements.
 RUN pip install -r requirements.txt
 COPY src/xgb_training /opt/gcp-demo2/xgb-training
 
-ENTRYPOINT ["python", "trainer/task.py"]
+ARG BUCKET_NAME
+ENV BUCKET=BUCKET_NAME
+
+ENTRYPOINT ["python", "trainer/task.py", "$BUCKET_NAME"]

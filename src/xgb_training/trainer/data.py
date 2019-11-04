@@ -16,7 +16,7 @@ def get_read_options(partition_name):
     for x in range(21):
         if (x < 10):
             read_options.selected_fields.append("Occupation_%02d" % (x))
-        else: 
+        else:
             read_options.selected_fields.append("Occupation_%d" % (x))
     read_options.selected_fields.append("City_Category_a")
     read_options.selected_fields.append("City_Category_b")

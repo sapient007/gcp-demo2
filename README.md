@@ -58,12 +58,16 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/credentials.json
 
 ### Building the container
 
-```bash
-docker build -f .\src\xgb_training\Dockerfile -t gcr.io/ml-sandbox-1-191918/gcp-demo2:training ./
-```
+#### Build the container with the training source code
 
 ```bash
-docker push gcr.io/ml-sandbox-1-191918/gcp-demo2:training
+docker build --pull -f .\src\xgb_training\Dockerfile --build-arg BUCKET=$BUCKET_NAME -t gcr.io/$PROJECT_ID/gcp-demo2:training ./
+```
+
+#### Push container to GCP Container Registry
+
+```bash
+docker push gcr.io/$PROJECT_ID/gcp-demo2:training
 ```
 
 ### Starting the training job
@@ -72,7 +76,22 @@ docker push gcr.io/ml-sandbox-1-191918/gcp-demo2:training
 gcloud ai-platform jobs submit training "blackfriday_"$(date +"%Y%m%d_%H%M%S") \
     --region us-east1 \
     --job-dir gs://gcp-cert-demo-2/model/output \
-    --master-image-uri gcr.io/ml-sandbox-1-191918/gcp-demo2:training
+    --staging-bucket gs://gcp-cert-demo-2 \
+    --package-path=xgb_training/trainer \
+    --module-name trainer.task \
+    --runtime-version 1.14 \
+    --python-version 3.5 \
+    --scale-tier CUSTOM \
+    --master-machine-type n1-standard-4 \
+    -- gcp-cert-demo-2 \
+    -- --n_jobs=4
+
+gcloud ai-platform jobs submit training "blackfriday_"$(date +"%Y%m%d_%H%M%S") \
+    --region us-east1 \
+    --job-dir gs://gcp-cert-demo-2/model/output \
+    --master-image-uri gcr.io/$PROJECT_ID/gcp-demo2:training \
+    --scale-tier CUSTOM \
+    --master-machine-type n1-standard-4
 ```
 
 ## Deployment
@@ -80,17 +99,16 @@ gcloud ai-platform jobs submit training "blackfriday_"$(date +"%Y%m%d_%H%M%S") \
 ### Creating the deployment 
 
 ```bash
-gcloud ml-engine versions create $VERSION_NAME \
-    --model=$MODEL_NAME \
-    --framework=xgboost \
-    --origin=$BOOSTER_PATH \
-    --python-version=3.5 \
-    --runtime-version=1.14
+gcloud ai-platform versions create $VERSION_NAME \
+  --model $MODEL_NAME \
+  --origin $MODEL_DIR \
+  --runtime-version=1.14 \
+  --framework SCIKIT_LEARN \
+  --python-version=3.5
 ```
 
 Set the new version to be the default
 
 ```bash
-gcloud ml-engine versions set-default $VERSION_NAME \
-    --model=$MODEL_NAME 
+gcloud ai-platform versions set-default $VERSION_NAME --model=$MODEL_NAME
 ```
