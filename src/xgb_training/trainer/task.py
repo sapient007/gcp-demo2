@@ -42,6 +42,7 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument("--n_jobs", type=int, default=1)
     parser.add_argument("--objective", type=str, default="reg:linear")
     parser.add_argument("--eval_metric ", type=str, default="rmse")
+    return parser
 
 
 if __name__ == '__main__':
