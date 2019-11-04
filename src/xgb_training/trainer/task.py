@@ -27,7 +27,7 @@ def evaluate(xg_reg: xgb.XGBRegressor, x_train: np.array, y_train: np.array, x_t
     print("Test RMSE: %.2f" % (score))
 
 
-if __name__ == '__main__':
+def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument("bucket", type=str)
     parser.add_argument("--filename", type=str, default="model.pkl")
@@ -42,5 +42,9 @@ if __name__ == '__main__':
     parser.add_argument("--n_jobs", type=int, default=1)
     parser.add_argument("--objective", type=str, default="reg:linear")
     parser.add_argument("--eval_metric ", type=str, default="rmse")
+
+
+if __name__ == '__main__':
+    parser = get_parser()
     args, _ = parser.parse_known_args()
     train_and_evaluate(vars(args))
