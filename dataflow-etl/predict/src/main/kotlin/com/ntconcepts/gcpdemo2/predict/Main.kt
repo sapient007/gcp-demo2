@@ -1,7 +1,10 @@
 package com.ntconcepts.gcpdemo2.predict
 
+import com.ntconcepts.gcpdemo2.dataprep.transforms.BigQueryCreateTable
 import com.ntconcepts.gcpdemo2.predict.io.BigQuerySchema
-import com.ntconcepts.gcpdemo2.predict.transforms.MapTableRowsFn
+import com.ntconcepts.gcpdemo2.predict.models.UserSummaryPredict
+import com.ntconcepts.gcpdemo2.predict.transforms.MapToKVsFn
+import com.ntconcepts.gcpdemo2.predict.transforms.MapToTableRowsFn
 import com.ntconcepts.gcpdemo2.predict.transforms.PredictFn
 import org.apache.beam.sdk.Pipeline
 import org.apache.beam.sdk.io.gcp.bigquery.BigQueryIO
@@ -21,6 +24,16 @@ fun getPipeline(options: PredictOptions): Pipeline {
     val schemaView = p.apply(BigQuerySchema(options.dataset, options.table))
 
     p.apply(
+        "Create BQ Table",
+        BigQueryCreateTable(
+            options.dataset,
+            options.outputUserPredictedTable,
+            options.dropTable,
+            UserSummaryPredict::class.java
+        )
+    )
+
+    p.apply(
         "ReadValidationData",
         BigQueryIO.readTableRows()
             .withoutValidation()
@@ -30,9 +43,19 @@ fun getPipeline(options: PredictOptions): Pipeline {
             .withRowRestriction("ml_partition = \"validate\"")
     ).apply(
         "MapTableRowsToSets",
-        ParDo.of(MapTableRowsFn(options.labelName, listOf("User_ID"))).withSideInput("schema", schemaView)
+        ParDo.of(MapToKVsFn(options.labelName, listOf("User_ID"))).withSideInput("schema", schemaView)
     ).apply(
+        "PredictUserTotals",
         ParDo.of(PredictFn(options.project, options.modelId, options.modelVersionId))
+    ).apply(
+        ParDo.of(MapToTableRowsFn())
+    ).apply(
+        "WriteBigquery",
+        BigQueryIO.writeTableRows()
+            .to(options.outputUserPredictedTableSpec)
+            .optimizedWrites()
+            .withCreateDisposition(BigQueryIO.Write.CreateDisposition.CREATE_NEVER)
+            .withWriteDisposition(BigQueryIO.Write.WriteDisposition.WRITE_TRUNCATE)
     )
 
     return p
@@ -47,7 +70,7 @@ fun getSelectedFields(): List<String> {
     val list = arrayListOf(
         "User_ID",
         "Purchase_Total",
-        "Purchase_Count",
+//        "Purchase_Count",
         "City_Category_a",
         "City_Category_b",
         "City_Category_c",
@@ -70,7 +93,7 @@ fun getSelectedFields(): List<String> {
         }
     }
 
-    for (i in 1..4) {
+    for (i in 0..4) {
         list.add("Stay_In_Current_City_Years_$i")
     }
 
