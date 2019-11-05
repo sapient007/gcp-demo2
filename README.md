@@ -74,22 +74,38 @@ If you want to use the Dataflow shuffle service (`--experiments=shuffle_mode=ser
 
 In addition to the [Cloud Dataflow Runner options](https://beam.apache.org/documentation/runners/dataflow/#pipeline-options), these options can be customized:
 
-- `--trainDataSource`: GCS object containing CSV training data
-- `--outputDataset`: Bigquery output dataset. Default: chicagotaxi
-- `--outputPurchaseTable`: Bigquery output table for event-level purchases. Default: purchases
-- `--outputPurchaseTableSpec`: Bigquery output tablespec for purchases. Default: blackfriday.purchases
-- `--outputUserSummaryTable`: Bigquery output table for user summaries. Default: user_summaries
-- `--outputUserSummaryTableSpec`: Bigquery output tablespec for user summaries. Default: blackfriday.user_summaries
-- `--mlPartitionTrainWeight`: Weight to apply to random partitioning of training data. Example: 70 for 70 percent. Default: 70.0
-- `--mlPartitionTestWeight`: Weight to apply to random partitioning of testing data. Example: 15 for 15 percent. Default: 15.0
-- `--mlPartitionValidationWeight`: Weight to apply to random partitioning of validation data. Example: 15 for 15 percent. Default: 15.0
-
-#### Start a job in an existing JDK 8 environment
-
-If you already have a JDK 8 development environment setup, Dataflow jobs can be started by running (from inside `./dataflow-etl`):
-
-```bash
-./gradlew run -Pargs="--project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --experiments=shuffle_mode=service"
+```
+--dropTable=<ValueProvider>
+  Default: true
+  Drop output table when job starts
+--mlPartitionTestWeight=<ValueProvider>
+  Default: 15.0
+  Weight to apply to random partitioning of testing data. Example: 15 for 15
+  percent. Default: 15.0
+--mlPartitionTrainWeight=<ValueProvider>
+  Default: 70.0
+  Weight to apply to random partitioning of training data. Example: 70 for 70
+  percent. Default: 70.0
+--mlPartitionValidationWeight=<ValueProvider>
+  Default: 15.0
+  Weight to apply to random partitioning of validation data. Example: 15 for
+  15 percent. Default: 15.0
+--outputDataset=<ValueProvider>
+  Default: blackfriday
+  Bigquery output dataset
+--outputPurchaseTable=<ValueProvider>
+  Default: purchases
+  Bigquery purchases output table
+--outputPurchaseTableSpec=<ValueProvider>
+  Default: blackfriday.purchases
+  Bigquery purchases output tablespec. Example: project_id:dataset.table
+--outputUserSummaryTable=<ValueProvider>
+  Default: user_summaries
+  Bigquery user summary output table
+--outputUserSummaryTableSpec=<ValueProvider>
+  Default: blackfriday.user_summaries
+  Bigquery user summary output tablespec. Example: project_id:dataset.table
+--trainDataSource=<ValueProvider>
 ```
 
 #### Creating a container via Docker and start job in container (recommended)
@@ -103,7 +119,7 @@ Make sure the GCP Container Registry API is enabled first: https://cloud.google.
 **Windows**
 
 ```powershell
-docker run --rm -v "$Env:UserProfile\AppData\Roaming\gcloud:/root/.config/gcloud"  -v '.\dataflow-etl\:/opt/etl' -w /opt/etl openjdk:8 ./gradlew :dataprep:jib --image gcr.io/$PROJECT_ID/$REPO_NAME:dataprep"
+docker run --rm -v "$Env:UserProfile\AppData\Roaming\gcloud:/root/.config/gcloud"  -v '.\dataflow-etl\:/opt/etl' -w /opt/etl openjdk:8 ./gradlew :dataprep:jib --image gcr.io/$env:PROJECT_ID/$env:REPO_NAME:dataprep"
 ```
 
 **macOS and Linux**
@@ -115,7 +131,7 @@ docker run --rm -v "~/.config/gcloud:/root/.config/gcloud"  -v './dataflow-etl\:
 ###### Using a service account
 
 ```bash
-docker run --rm -v "$LOCATION_OF_SA_JSON:/opt/sa/key.json"  -v './dataflow-etl\:/opt/etl' -e GOOGLE_APPLICATION_CREDENTIALS=/opt/sa/key.json -w /opt/etl openjdk:8 ./gradlew :dataprep:jib --image gcr.io/$PROJECT_ID/$REPO_NAME:dataprep"
+docker run --rm -v "$LOCATION_OF_SA_JSON:/opt/sa/key.json"  -v './dataflow-etl\:/opt/etl' -e GOOGLE_APPLICATION_CREDENTIALS=/opt/sa/key.json -w /opt/etl openjdk:8 ./gradlew :dataprep:jib --image gcr.io/$PROJECT_ID/$REPO_NAME:dataprep
 ```
 
 ##### Step 2: Start the job from the container
@@ -125,19 +141,104 @@ docker run --rm -v "$LOCATION_OF_SA_JSON:/opt/sa/key.json"  -v './dataflow-etl\:
 **Windows**
 
 ```powershell
-docker run --rm -v "$Env:UserProfile\AppData\Roaming\gcloud:/root/.config/gcloud" gcr.io/$PROJECT_ID/$REPO_NAME --project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --jobName=$JOB_NAME --tempLocation=$STAGING_LOCATION --trainDataSource=$DATA_LOCATION
+docker run --rm -v "$env:UserProfile\AppData\Roaming\gcloud:/root/.config/gcloud" gcr.io/$env:PROJECT_ID/$env:REPO_NAME:dataprep --project=$env:PROJECT_ID --runner=DataflowRunner --region=$env:GCP_REGION --workerMachineType=$env:INSTANCE_TYPE --maxNumWorkers=$env:MAX_WORKERS --jobName=$env:JOB_NAME --tempLocation=$env:STAGING_LOCATION --trainDataSource=$env:DATA_LOCATION
 ```
 
 **macOS and Linux**
 
 ```bash
-docker run --rm -v "~/.config/gcloud:/root/.config/gcloud" gcr.io/$PROJECT_ID/$REPO_NAME --project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --jobName=$JOB_NAME --tempLocation=$STAGING_LOCATION --trainDataSource=$DATA_LOCATION
+docker run --rm -v "~/.config/gcloud:/root/.config/gcloud" gcr.io/$PROJECT_ID/$REPO_NAME:dataprep --project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --jobName=$JOB_NAME --tempLocation=$STAGING_LOCATION --trainDataSource=$DATA_LOCATION
 ```
 
 ###### Using a service account
 
 ```bash
-docker run --rm -v "$LOCATION_OF_SA_JSON:/opt/sa/key.json" -e GOOGLE_APPLICATION_CREDENTIALS=/opt/sa/key.json gcr.io/$PROJECT_ID/$REPO_NAME --project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --jobName=$JOB_NAME --tempLocation=$STAGING_LOCATION --trainDataSource=$DATA_LOCATION
+docker run --rm -v "$LOCATION_OF_SA_JSON:/opt/sa/key.json" -e GOOGLE_APPLICATION_CREDENTIALS=/opt/sa/key.json gcr.io/$PROJECT_ID/$REPO_NAME:dataprep --project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --jobName=$JOB_NAME --tempLocation=$STAGING_LOCATION --trainDataSource=$DATA_LOCATION
+```
+
+### Prediction job
+
+The model must be trained and deployed to AI Platform to run this job. See steps below to train and deploy the model.
+
+#### Dataflow options
+
+In addition to the [Cloud Dataflow Runner options](https://beam.apache.org/documentation/runners/dataflow/#pipeline-options), these options can be customized:
+
+```
+--dataset=<ValueProvider>
+  Default: blackfriday
+  Bigquery black friday dataset
+--dropTable=<ValueProvider>
+  Default: true
+  Drop output table when job starts
+--labelName=<ValueProvider>
+  Default: Purchase_Total
+  Name of label field in the table
+--modelId=<ValueProvider>
+  Default: blackfriday
+  ID of deployed model on AI Platform
+--modelVersionId=<ValueProvider>
+  ID of version of deployed model on AI Platform
+--outputUserPredictedTable=<ValueProvider>
+  Default: user_summaries_pred
+  Bigquery predicted user summaries output table
+--outputUserPredictedTableSpec=<ValueProvider>
+  Default: blackfriday.user_summaries_pred
+  Bigquery predicted user summaries output table spec
+--table=<ValueProvider>
+  Default: user_summaries
+  Bigquery user_summary table
+--userSummaryTableSpec=<ValueProvider>
+  Default: blackfriday.user_summaries
+  Bigquery UserSummary output tablespec. Example: project_id:dataset.table
+```
+
+#### Creating a container via Docker and start job in container (recommended)
+
+##### Step 1: Create the container
+
+Make sure the GCP Container Registry API is enabled first: https://cloud.google.com/container-registry/docs/quickstart
+
+###### Using application default credentials
+
+**Windows**
+
+```powershell
+docker run --rm -v "$env:UserProfile\AppData\Roaming\gcloud:/root/.config/gcloud"  -v '.\dataflow-etl\:/opt/etl' -w /opt/etl openjdk:8 ./gradlew :predict:jib --image gcr.io/$env:PROJECT_ID/$env:REPO_NAME:predict
+```
+
+**macOS and Linux**
+
+```bash
+docker run --rm -v "~/.config/gcloud:/root/.config/gcloud"  -v './dataflow-etl\:/opt/etl' -w /opt/etl openjdk:8 ./gradlew :predict:jib --image gcr.io/$PROJECT_ID/$REPO_NAME:predict"
+```
+
+###### Using a service account
+
+```bash
+docker run --rm -v "$LOCATION_OF_SA_JSON:/opt/sa/key.json"  -v './dataflow-etl\:/opt/etl' -e GOOGLE_APPLICATION_CREDENTIALS=/opt/sa/key.json -w /opt/etl openjdk:8 ./gradlew :predict:jib --image gcr.io/$PROJECT_ID/$REPO_NAME:predict"
+```
+
+##### Step 2: Start the job from the container
+
+###### Using application default credentials
+
+**Windows**
+
+```powershell
+docker run --rm -v "$env:UserProfile\AppData\Roaming\gcloud:/root/.config/gcloud" gcr.io/$env:PROJECT_ID/$env:REPO_NAME:predict --project=$env:PROJECT_ID --runner=DataflowRunner --region=$env:GCP_REGION --workerMachineType=$env:INSTANCE_TYPE --maxNumWorkers=$env:MAX_WORKERS --jobName=$env:JOB_NAME --tempLocation=$env:STAGING_LOCATION --modelVersionId=$env:MODEL_VERSION
+```
+
+**macOS and Linux**
+
+```bash
+docker run --rm -v "~/.config/gcloud:/root/.config/gcloud" gcr.io/$PROJECT_ID/$REPO_NAME:predict --project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --jobName=$JOB_NAME --tempLocation=$STAGING_LOCATION --modelVersionId=$MODEL_VERSION
+```
+
+###### Using a service account
+
+```bash
+docker run --rm -v "$LOCATION_OF_SA_JSON:/opt/sa/key.json" -e GOOGLE_APPLICATION_CREDENTIALS=/opt/sa/key.json gcr.io/$PROJECT_ID/$REPO_NAME:predict --project=$PROJECT_ID --runner=DataflowRunner --region=$GCP_REGION --workerMachineType=$INSTANCE_TYPE --maxNumWorkers=$MAX_WORKERS --jobName=$JOB_NAME --tempLocation=$STAGING_LOCATION --modelVersionId=$MODEL_VERSION
 ```
 
 ## Training
@@ -170,8 +271,7 @@ gcloud ai-platform jobs submit training "blackfriday_"$(date +"%Y%m%d_%H%M%S") \
     --python-version 3.5 \
     --scale-tier CUSTOM \
     --master-machine-type n1-standard-4 \
-    -- $BUCKET_NAME \
-    -- --n_jobs=4
+    -- $BUCKET_NAME --n_jobs=4
 ```
 
 ### Using a container
@@ -192,6 +292,8 @@ docker push gcr.io/$PROJECT_ID/gcp-demo2:training
 
 ### Starting the training job
 
+Note for Windows users: Use `"blackfriday_$(Get-Date -UFormat "%Y%m%d_%H%M%S")"` for the job name.
+
 ```bash
 gcloud ai-platform jobs submit training "blackfriday_"$(date +"%Y%m%d_%H%M%S") \
     --region us-east1 \
@@ -206,7 +308,7 @@ gcloud ai-platform jobs submit training "blackfriday_"$(date +"%Y%m%d_%H%M%S") \
 
 ### Creating the deployment 
 
-Whichever method chosen to train the model, a pickled version of the model is saved into GCS that can be used to create an online prediction deployment.
+Whichever method chosen to train the model, a pickled version of the trained model is saved into GCS that can be used to create an online prediction deployment.
 
 ```bash
 gcloud ai-platform versions create $VERSION_NAME \
@@ -216,6 +318,8 @@ gcloud ai-platform versions create $VERSION_NAME \
   --framework SCIKIT_LEARN \
   --python-version=3.5
 ```
+
+When using the default options, the `$MODEL_DIR` will be: `gs://$BUCKET_NAME/model`
 
 Set the new version to be the default
 
