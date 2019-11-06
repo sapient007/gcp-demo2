@@ -10,9 +10,6 @@ interface Demo2Options : DataflowPipelineOptions {
     val trainDataSource: ValueProvider<String>
     fun setTrainDataSource(trainDataSource: ValueProvider<String>)
 
-    val testDataSource: ValueProvider<String>
-    fun setTestDataSource(testDataSource: ValueProvider<String>)
-
     @get:Description("Bigquery output dataset")
     @get:Default.String("blackfriday")
     val outputDataset: ValueProvider<String>

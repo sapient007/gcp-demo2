@@ -10,6 +10,7 @@ plugins {
     java
     application
     kotlin("jvm") version "1.3.50"
+    id("com.google.cloud.tools.jib") version "1.7.0"
 }
 
 allprojects {
@@ -18,6 +19,7 @@ allprojects {
     apply(plugin = "java")
     apply(plugin = "kotlin")
     apply(plugin = "application")
+    apply(plugin = "com.google.cloud.tools.jib")
 //    buildDir = File("%temp%${rootProject.name}\${project.name}")
 }
 
