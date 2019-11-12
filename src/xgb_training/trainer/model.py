@@ -1,5 +1,6 @@
 import os
 import math
+from os import path
 import trainer.data as data
 import pickle
 import numpy as np
@@ -23,6 +24,43 @@ def process_data(test_partition_name="test") -> Tuple[np.array, np.array, np.arr
     return x_train, y_train, x_test, y_test, train_raw.drop(['Purchase_Total', ], axis=1).columns
 
 
+def train_shards(params: dict, test_partition_name="test", shards=1) -> Tuple[xgb.XGBRegressor, List[float], List[float]]:
+    test_raw = data.get_data_partition(test_partition_name)
+    x_test = test_raw.drop(['Purchase_Total'], axis=1)
+    y_test = test_raw['Purchase_Total']
+
+    session, train_readers = data.get_data_partition_sharded("train", shards)
+    xg_reg = xgb.XGBRegressor()
+    shard = 1
+    rmse_scores = []
+    r2_scores = []
+    for reader in train_readers:
+        reader.rows(session)
+        rows = reader.rows(session)
+        train_raw = rows.to_dataframe()
+        x_train = train_raw.drop(['Purchase_Total', ], axis=1)
+        y_train = train_raw['Purchase_Total']
+        booster = ""
+        if path.exists("incr_model.bst"):
+            booster = "incr_model.bst"
+        xg_reg = train(x_train, y_train, params, booster=booster)
+        xg_reg.save_model("incr_model.bst")
+
+        print("Shard %d train data R^2: %.2f" % (shard, r2(xg_reg, x_train, y_train)))
+
+        r = r2(xg_reg, x_test, y_test)
+        r2_scores.append(r)
+        print("Shard %d test data R^2: %.2f" % (shard, r))
+
+        y_pred = predict_regressor(xg_reg, x_test)
+
+        score = rmse(y_pred, y_test)
+        rmse_scores.append(score)
+        print("Shard %d test data RMSE: %.2f" % (shard, score))
+        shard += 1
+    os.remove("incr_model.bst")
+    return xg_reg, rmse_scores, r2_scores
+
 # def train(x_train: np.array, y_train: np.array, x_test: np.array, y_test: np.array, cols, params) -> Tuple[xgb.Booster, dict]:
 #     dtrain = xgb.DMatrix(x_train, label=y_train, feature_names=cols)
 #     dtest = xgb.DMatrix(x_test, y_test)
@@ -31,11 +69,15 @@ def process_data(test_partition_name="test") -> Tuple[np.array, np.array, np.arr
 #             (dtest, "dtest")], evals_result=evals_result)
 #     return bst, evals_result
 
-def train(x_train: np.array, y_train: np.array, x_test: np.array, y_test: np.array, cols, params: dict) -> xgb.XGBRegressor:
+
+def train(x_train: np.array, y_train: np.array, params: dict, booster="") -> xgb.XGBRegressor:
     xg_reg = xgb.XGBRegressor(
+        random_state=42,
+        seed=42,
         n_jobs=params.get("n_jobs"),
         max_depth=params.get("max_depth"),
         subsample=params.get("subsample"),
+        colsample_bytree=params.get("colsample_bytree"),
         reg_lambda=params.get("lambda"),
         reg_alpha=params.get("alpha"),
         learning_rate=params.get("eta"),
@@ -44,6 +86,8 @@ def train(x_train: np.array, y_train: np.array, x_test: np.array, y_test: np.arr
         objective=params.get("objective"),
         eval=params.get("eval_metric")
     )
+    if booster != "":
+        xg_reg.load_model(booster)
     xg_reg.fit(x_train, y_train)
     return xg_reg
 
@@ -104,8 +148,10 @@ def save_model(xg_reg: xgb.XGBRegressor, bucket_name: str, path: str, filename: 
     :return:
     """
 
-    with open(filename, 'wb') as model_file:
-        pickle.dump(xg_reg, model_file)
+    # with open(filename, 'w+b') as model_file:
+    #     pickle.dump(xg_reg, model_file)
+        
+    xg_reg.save_model(filename)
     upload_blob(bucket_name, filename, "{}/{}".format(path, filename))
 
 
