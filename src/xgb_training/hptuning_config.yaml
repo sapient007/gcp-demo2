@@ -9,29 +9,29 @@ trainingInput:
     params:
     - parameterName: eta
       type: DOUBLE
-      minValue:  0.000001
+      minValue:  0.001
       maxValue:  1
       scaleType: UNIT_LINEAR_SCALE
     - parameterName: max_depth
       type: INTEGER
       minValue:  2
-      maxValue:  50
+      maxValue:  20
       scaleType: UNIT_LINEAR_SCALE
     - parameterName: colsample_bytree
       type: DOUBLE
-      minValue:  0.000001
-      maxValue:  1
-      scaleType: UNIT_REVERSE_LOG_SCALE
+      minValue:  0.001
+      maxValue:  0.9
+      scaleType: UNIT_LINEAR_SCALE
     - parameterName: subsample
       type: DOUBLE
-      minValue:  0.000001
-      maxValue:  1
-      scaleType: UNIT_REVERSE_LOG_SCALE
+      minValue:  0.001
+      maxValue:  .75
+      scaleType: UNIT_LINEAR_SCALE
     - parameterName: lambda_param
       type: DOUBLE
       minValue:  0.000001
       maxValue:  10
-      scaleType: UNIT_LOG_SCALE
+      scaleType: UNIT_REVERSE_LOG_SCALE
     - parameterName: alpha
       type: DOUBLE
       minValue:  0.000001
