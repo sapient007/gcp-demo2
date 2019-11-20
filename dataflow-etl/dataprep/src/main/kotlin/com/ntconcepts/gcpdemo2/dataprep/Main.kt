@@ -94,21 +94,7 @@ fun getPipeline(options: Demo2Options): Pipeline {
     val encodedOutputMap = HashMap<String, TupleTag<String>>()
     val outputTags = makeEncodedOutputs(encodedOutputMap)
 
-//    val testUsersTag = TupleTag<User>()
-//    val test = p.apply(
-//        "Get testing data",
-//        FileIO.match()
-//            .filepattern(options.testDataSource)
-//    )
-//        .apply(
-//            "Parse CSV",
-//            ParDo.of(CSVParserFn("test", testUsersTag, encodedOutputMap))
-//                .withOutputTags(testUsersTag, outputTags)
-//        )
-//    val testUsersPCollection: PCollection<User> =
-//        test.get(testUsersTag).setCoder(SerializableCoder.of(User::class.java))
-
-    val trainUsersTag = TupleTag<Purchase>()
+    val trainPurchasesTag = TupleTag<Purchase>()
     val train = p.apply(
         "Get training data",
         FileIO.match()
@@ -116,26 +102,39 @@ fun getPipeline(options: Demo2Options): Pipeline {
     )
         .apply(
             "Parse CSV",
-            ParDo.of(CSVParserFn(trainUsersTag, encodedOutputMap))
-                .withOutputTags(trainUsersTag, outputTags)
+            ParDo.of(CSVParserFn(trainPurchasesTag, encodedOutputMap))
+                .withOutputTags(trainPurchasesTag, outputTags)
         )
     val trainUsersPCollection: PCollection<Purchase> =
-        train.get(trainUsersTag).setCoder(SerializableCoder.of(Purchase::class.java))
+        train.get(trainPurchasesTag).setCoder(SerializableCoder.of(Purchase::class.java))
 
     val collectionList = PCollectionList.of(trainUsersPCollection)
 
-    val users = collectionList.apply(Flatten.pCollections()).setCoder(SerializableCoder.of(Purchase::class.java))
+    val purchases = collectionList.apply(Flatten.pCollections()).setCoder(SerializableCoder.of(Purchase::class.java))
 
     val encodedViewsPair = makeOutputViews(train, encodedOutputMap)
+    //Create or recreate table
+    p.apply(
+        "Create BQ Table",
+        BigQueryCreateTable(
+            options.outputDataset,
+            options.outputPurchaseTable,
+            options.dropTable,
+            encodedViewsPair.first,
+            encodedViewsPair.second,
+            encodedCategories,
+            Purchase::class.java
+        )
+    )
 
-//    val purchases = users.apply(
-//        "Map encoded values",
-//        ParDo.of(EncodeOneHotFn(encodedViewsPair.first)).withSideInputs(encodedViewsPair.second)
-//    )
 
-    writePurchasesToBQ(p, options, users, encodedViewsPair)
+    writePurchasesToBQ(
+        p, options, purchases,
+        encodedViewsPair.first,
+        encodedViewsPair.second
+    )
 
-    val userSummaries = groupUsers(users)
+    val userSummaries = groupUsers(purchases)
 
 
     writeUserSummariesToBQ(
@@ -173,7 +172,8 @@ fun getPipeline(options: Demo2Options): Pipeline {
                     )
                 ).withSideInputs(encodedViewsPair.second)
             ).setCoder(SerializableCoder.of(UserSummary::class.java)),
-        encodedViewsPair
+        encodedViewsPair.first,
+        encodedViewsPair.second
     )
 
 
@@ -208,21 +208,10 @@ fun writePurchasesToBQ(
     p: Pipeline,
     options: Demo2Options,
     purchases: PCollection<Purchase>,
-    encodedViewsPair: Pair<HashMap<String, PCollectionView<List<String>>>, ArrayList<PCollectionView<List<String>>?>>
+    encodedViewsMap: HashMap<String, PCollectionView<List<String>>>,
+    encodedViewsList: ArrayList<PCollectionView<List<String>>?>
 ) {
-    //Create or recreate table
-    p.apply(
-        "Create BQ Table",
-        BigQueryCreateTable(
-            options.outputDataset,
-            options.outputPurchaseTable,
-            options.dropTable,
-            encodedViewsPair.first,
-            encodedViewsPair.second,
-            encodedCategories,
-            Purchase::class.java
-        )
-    )
+
 
     purchases.apply(
         "Map to TableRows", MapElements.into(
@@ -243,18 +232,18 @@ fun writeUserSummariesToBQ(
     p: Pipeline,
     options: Demo2Options,
     users: PCollection<UserSummary>,
-    encodedViewsPair: Pair<HashMap<String, PCollectionView<List<String>>>, ArrayList<PCollectionView<List<String>>?>>
+    encodedViewsMap: HashMap<String, PCollectionView<List<String>>>,
+    encodedViewsList: ArrayList<PCollectionView<List<String>>?>
 ) {
     //Create or recreate table
     p.apply(
         "Create BQ Table",
-
         BigQueryCreateTable(
             options.outputDataset,
             options.outputUserSummaryTable,
             options.dropTable,
-            encodedViewsPair.first,
-            encodedViewsPair.second,
+            encodedViewsMap,
+            encodedViewsList,
             encodedCategories,
             UserSummary::class.java
         )
@@ -284,7 +273,6 @@ fun makeOutputViews(pTrain: PCollectionTuple, encodedOutputMap: HashMap<String, 
     val encodedViewsList = arrayListOf<PCollectionView<List<String>>?>()
 
     encodedOutputMap.forEach {
-        //        val testCollection: PCollection<String> = pTest.get<String>(it.value).setCoder(StringUtf8Coder.of())
         val trainCollection: PCollection<String> = pTrain.get<String>(it.value).setCoder(StringUtf8Coder.of())
 
         val collectionList = PCollectionList.of(trainCollection)

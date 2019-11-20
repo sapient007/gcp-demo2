@@ -1,7 +1,9 @@
+from typing import List, Tuple
 from google.cloud import bigquery_storage_v1beta1
+import pandas as pd
 
 
-def get_table_ref():
+def get_table_ref() -> bigquery_storage_v1beta1.types.TableReference:
     table_ref = bigquery_storage_v1beta1.types.TableReference()
     table_ref.project_id = "ml-sandbox-1-191918"
     table_ref.dataset_id = "blackfriday"
@@ -9,7 +11,7 @@ def get_table_ref():
     return table_ref
 
 
-def get_read_options(partition_name):
+def get_read_options(partition_name: str) -> bigquery_storage_v1beta1.types.TableReadOptions:
     read_options = bigquery_storage_v1beta1.types.TableReadOptions()
     read_options.selected_fields.append("Purchase_Total")
     # read_options.selected_fields.append("Purchase_Count")
@@ -36,17 +38,17 @@ def get_read_options(partition_name):
     for x in range(1, 21):
         if (x < 10):
             read_options.selected_fields.append("Product_Category_1_%02d" % (x))
-        else: 
+        else:
             read_options.selected_fields.append("Product_Category_1_%d" % (x))
     for x in range(1, 19):
         if (x < 10):
             read_options.selected_fields.append("Product_Category_2_%02d" % (x))
-        else: 
+        else:
             read_options.selected_fields.append("Product_Category_2_%d" % (x))
     for x in range(1, 19):
         if (x < 10):
             read_options.selected_fields.append("Product_Category_3_%02d" % (x))
-        else: 
+        else:
             read_options.selected_fields.append("Product_Category_3_%d" % (x))
 
     # These vals don't exist
@@ -61,7 +63,11 @@ def get_read_options(partition_name):
     return read_options
 
 
-def get_session(client, table_ref, read_options, parent):
+def get_session(client: bigquery_storage_v1beta1.BigQueryStorageClient,
+                table_ref: bigquery_storage_v1beta1.types.TableReference,
+                read_options: bigquery_storage_v1beta1.types.TableReadOptions,
+                parent: str,
+                streams: int) -> bigquery_storage_v1beta1.types.ReadSession:
     return client.create_read_session(
         table_ref,
         parent,
@@ -70,24 +76,46 @@ def get_session(client, table_ref, read_options, parent):
         # This API can also deliver data serialized in Apache Arrow format.
         # This example leverages Apache Avro.
         format_=bigquery_storage_v1beta1.enums.DataFormat.AVRO,
+        requested_streams=streams,
         # We use a LIQUID strategy in this example because we only read from a
         # single stream. Consider BALANCED if you're consuming multiple streams
         # concurrently and want more consistent stream sizes.
-        sharding_strategy=(bigquery_storage_v1beta1.enums.ShardingStrategy.LIQUID),
+        sharding_strategy=(bigquery_storage_v1beta1.enums.ShardingStrategy.BALANCED),
     )
 
 
-def get_reader(client, session):
-    return client.read_rows(bigquery_storage_v1beta1.types.StreamPosition(stream=session.streams[0]))
+def get_reader(client: bigquery_storage_v1beta1.BigQueryStorageClient,
+               stream: bigquery_storage_v1beta1.types.Stream) -> bigquery_storage_v1beta1.reader.ReadRowsStream:
+    return client.read_rows(bigquery_storage_v1beta1.types.StreamPosition(stream=stream))
 
 
-def get_df(reader, session):
+def get_df(reader: bigquery_storage_v1beta1.reader.ReadRowsStream,
+           session: bigquery_storage_v1beta1.types.ReadSession) -> pd.DataFrame:
     rows = reader.rows(session)
     return rows.to_dataframe()
 
 
-def get_data_partition(partition_name):
+def get_data_partition_sharded(partition_name: str, shards=1) -> Tuple[bigquery_storage_v1beta1.types.ReadSession, List[bigquery_storage_v1beta1.types.ReadSession]]:
     client = bigquery_storage_v1beta1.BigQueryStorageClient()
-    session = get_session(client, get_table_ref(), get_read_options(partition_name), "projects/{}".format(get_table_ref().project_id))
-    reader = get_reader(client, session)
+    session = get_session(client,
+                          get_table_ref(),
+                          get_read_options(partition_name),
+                          "projects/{}".format(get_table_ref().project_id),
+                          shards)
+    readers = []
+    for stream in session.streams:
+        reader = get_reader(client, stream)
+        readers.append(reader)
+
+    return session, readers
+
+
+def get_data_partition(partition_name: str) -> pd.DataFrame:
+    client = bigquery_storage_v1beta1.BigQueryStorageClient()
+    session = get_session(client,
+                          get_table_ref(),
+                          get_read_options(partition_name),
+                          "projects/{}".format(get_table_ref().project_id),
+                          1)
+    reader = get_reader(client, session.streams[0])
     return get_df(reader, session)

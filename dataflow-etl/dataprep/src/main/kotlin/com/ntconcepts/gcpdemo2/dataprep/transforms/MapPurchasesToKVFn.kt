@@ -5,7 +5,7 @@ import org.apache.beam.sdk.transforms.DoFn
 import org.apache.beam.sdk.values.KV
 
 //private val usersOut: TupleTag<UserSummary>
-class MapPurchasesToKVFn() : DoFn<Purchase, KV<Int, Purchase>>() {
+class MapPurchasesToKVFn : DoFn<Purchase, KV<Int, Purchase>>() {
 
     @ProcessElement
     fun apply(c: ProcessContext) {

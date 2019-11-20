@@ -1,51 +1,97 @@
-import argparse
 import trainer.model as model
-import numpy as np
-import xgboost as xgb
+import trainer.tune as tuner
+import click
 
 
-def train_and_evaluate(args: dict):
+@click.group()
+# @click.option("--eta", type=float, default=0.082)
+# @click.option("--max_depth", type=int, default=12)
+# @click.option("--subsample", type=float, default=1.0)
+# @click.option("--colsample_bytree", type=float, default=0.286)
+# @click.option("--lambda_param", type=float, default=8.151)
+# @click.option("--alpha", type=float, default=0)
+# @click.option("--tree_method", type=str, default="hist")
+# @click.option("--predictor", type=str, default="cpu_predictor")
+# @click.option("--n_jobs", type=int, default=1)
+# @click.option("--objective", type=str, default="reg:linear")
+# @click.option("--eval_metric", type=str, default="rmse")
+@click.option("--eta", type=float, default=0.1)
+@click.option("--max_depth", type=int, default=6)
+@click.option("--subsample", type=float, default=1.0)
+@click.option("--lambda_param", type=float, default=1.0)
+@click.option("--alpha", type=float, default=0)
+@click.option("--tree_method", type=str, default="hist")
+@click.option("--predictor", type=str, default="cpu_predictor")
+@click.option("--n_jobs", type=int, default=1)
+@click.option("--objective", type=str, default="reg:linear")
+@click.option("--eval_metric", type=str, default="rmse")
+@click.option("--colsample_bytree", type=float, default=1.0)
+@click.pass_context
+def cli(ctx, eta: float, max_depth: int,
+        subsample: float, lambda_param: float, alpha: float, tree_method: str,
+        predictor: str, n_jobs: int, objective: str, eval_metric: str, colsample_bytree: float):
+    ctx.ensure_object(dict)
+    ctx.obj["params"] = {}
+    ctx.obj["params"]["eta"] = eta
+    ctx.obj["params"]["max_depth"] = max_depth
+    ctx.obj["params"]["subsample"] = subsample
+    ctx.obj["params"]["lambda"] = lambda_param
+    ctx.obj["params"]["alpha"] = alpha
+    ctx.obj["params"]["tree_method"] = tree_method
+    ctx.obj["params"]["predictor"] = predictor
+    ctx.obj["params"]["n_jobs"] = n_jobs
+    ctx.obj["params"]["objective"] = objective
+    ctx.obj["params"]["eval_metric"] = eval_metric
+    ctx.obj["params"]["colsample_bytree"] = colsample_bytree
+
+
+@click.command()
+@click.pass_context
+@click.argument('bucket', type=str)
+@click.option('--filename', type=str, default="model.bst")
+@click.option("--bucket_path", type=str, default="model")
+@click.option("--shards", type=int, default=1)
+def train(ctx, bucket: str, bucket_path: str, filename: str, shards: int):
     """
     TODO: description
     :param args:
     :return:
     """
-    x_train, y_train, x_test, y_test, cols = model.process_data()
-    xg_reg = model.train(x_train, y_train, x_test, y_test, cols, args)
-    model.save_model(xg_reg, args.get("bucket"), args.get("bucket_path"), args.get("filename"))
-    model.delete_model(args.get("filename"))
-    evaluate(xg_reg, x_train, y_train, x_test, y_test, args)
+    click.echo("Starting training")
+    xg_reg, _, _ = model.train_shards(ctx.obj.get("params"), shards=shards)
+    model.save_model(xg_reg, bucket, bucket_path, filename)
+    model.delete_model(filename)
 
 
-def evaluate(xg_reg: xgb.XGBRegressor, x_train: np.array, y_train: np.array, x_test: np.array, y_test: np.array, args: dict):
-    r2 = model.r2(xg_reg, x_test, y_test)
-    print("R^2: %.2f" % (r2))
+@click.command()
+@click.pass_context
+@click.option("--eta", type=float, default=0.1)
+@click.option("--max_depth", type=int, default=6)
+@click.option("--subsample", type=float, default=1.0)
+@click.option("--lambda_param", type=float, default=1.0)
+@click.option("--alpha", type=float, default=0)
+@click.option("--shards", type=int, default=1)
+@click.option("--job-dir", type=str, default="")
+@click.option("--colsample_bytree", type=float, default=1.0)
+@click.option("--tree_method", type=str, default="hist")
+def tune(ctx, shards: int, eta: float, max_depth: int,
+         subsample: float, lambda_param: float, alpha: float, job_dir: str, colsample_bytree: float, tree_method: str):
+    ctx.obj["params"]["eta"] = eta
+    ctx.obj["params"]["max_depth"] = max_depth
+    ctx.obj["params"]["subsample"] = subsample
+    ctx.obj["params"]["lambda"] = lambda_param
+    ctx.obj["params"]["alpha"] = alpha
+    ctx.obj["params"]["colsample_bytree"] = colsample_bytree
+    ctx.obj["params"]["tree_method"] = tree_method
 
-    y_pred = model.predict_regressor(xg_reg, x_test)
-
-    score = model.rmse(y_pred, y_test)
-    print("Test RMSE: %.2f" % (score))
+    tuner.tune(ctx.obj.get("params"), shards)
 
 
-def get_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("bucket", type=str)
-    parser.add_argument("--filename", type=str, default="model.pkl")
-    parser.add_argument("--bucket_path", type=str, default="model")
-    parser.add_argument("--eta", type=float, default=0.1)
-    parser.add_argument("--max_depth", type=int, default=3)
-    parser.add_argument("--subsample", type=float, default=1.0)
-    parser.add_argument("--lambda", type=float, default=1.0)
-    parser.add_argument("--alpha", type=float, default=0)
-    parser.add_argument("--tree_method", type=str, default="hist")
-    parser.add_argument("--predictor", type=str, default="cpu_predictor")
-    parser.add_argument("--n_jobs", type=int, default=1)
-    parser.add_argument("--objective", type=str, default="reg:linear")
-    parser.add_argument("--eval_metric ", type=str, default="rmse")
-    return parser
-
+cli.add_command(train)
+cli.add_command(tune)
 
 if __name__ == '__main__':
-    parser = get_parser()
-    args, _ = parser.parse_known_args()
-    train_and_evaluate(vars(args))
+    cli(obj={})
+    # parser = get_parser()
+    # args, _ = parser.parse_known_args()
+    # train_and_evaluate(vars(args))

@@ -1,6 +1,9 @@
 scikit-learn==0.20.2
+scikit-optimize==0.5.2
 xgboost==0.81
 pandas==0.24.0
 google-cloud-bigquery-storage[pandas,fastavro]
 google-cloud-storage==1.20.0
 matplotlib==3.0.0
+cloudml-hypertune==0.1.0.dev5
+click==7.0

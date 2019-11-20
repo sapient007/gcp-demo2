@@ -23,10 +23,12 @@ class BigQueryCreateTable(
     val clazz: Class<*>
 ) : PTransform<PBegin, PDone>() {
 
-    constructor(dataset: ValueProvider<String>,
-                table: ValueProvider<String>,
-                dropTable: ValueProvider<Boolean>,
-                clazz: Class<*>): this(
+    constructor(
+        dataset: ValueProvider<String>,
+        table: ValueProvider<String>,
+        dropTable: ValueProvider<Boolean>,
+        clazz: Class<*>
+    ) : this(
         dataset,
         table,
         dropTable,
@@ -36,21 +38,30 @@ class BigQueryCreateTable(
         clazz
     )
 
-
     override fun expand(input: PBegin): PDone {
-        //Hack bc passing PBegin wasn't working with ParDo/DoFn
-        val pardo = ParDo.of(
-            CreateBQTable(dataset, table, dropTable, encodedViewsMap, encodedCategories, clazz)
-        )
-                if (encodedViewsList != null ) {
-                    pardo.withSideInputs(encodedViewsList)
-                }
 
-        input.apply(Create.of(true)).setCoder(BooleanCoder.of())
-            .apply(
-                "CreateTable",
-                pardo
-            )
+        //withSideInputs must be added declaratively or else the DAG
+        //will not be constructed correctly and this transform
+        //will not get the side inputs
+        if (encodedViewsList != null) {
+            input.apply(Create.of(true)).setCoder(BooleanCoder.of())
+                .apply(
+                    "CreateTable",
+                    ParDo.of(
+                        CreateBQTable(dataset, table, dropTable, encodedViewsMap, encodedCategories, clazz)
+                    ).withSideInputs(encodedViewsList)
+                )
+        } else {
+            input.apply(Create.of(true)).setCoder(BooleanCoder.of())
+                .apply(
+                    "CreateTable",
+                    ParDo.of(
+                        CreateBQTable(dataset, table, dropTable, encodedViewsMap, encodedCategories, clazz)
+                    )
+                )
+        }
+        //Hack bc passing PBegin wasn't working with ParDo/DoFn
+
         return PDone.`in`(input.pipeline)
     }
 
@@ -79,9 +90,6 @@ class BigQueryCreateTable(
             }
             val fields = ArrayList<Field>()
 
-
-//            Class.forName(clazz.canonicalName).kotlin
-
             //Add fields with BigQueryField annotations
             clazz.kotlin.members.forEach {
                 val fieldName = it.name
@@ -101,7 +109,6 @@ class BigQueryCreateTable(
             encodedViewsMap?.forEach {
                 val fieldName = it.key
                 val encodedDistinctVals = c.sideInput(it.value)
-
 
                 encodedDistinctVals.sorted().forEach {
                     //Only add the encoded field to the schema if it's whitelisted

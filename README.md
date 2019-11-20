@@ -204,7 +204,7 @@ Make sure the GCP Container Registry API is enabled first: https://cloud.google.
 **Windows**
 
 ```powershell
-docker run --rm -v "$env:UserProfile\AppData\Roaming\gcloud:/root/.config/gcloud"  -v '.\dataflow-etl\:/opt/etl' -w /opt/etl openjdk:8 ./gradlew :predict:jib --image gcr.io/$env:PROJECT_ID/$env:REPO_NAME:predict
+docker run --rm -v "$env:UserProfile\AppData\Roaming\gcloud:/root/.config/gcloud"  -v "$PWD/dataflow-etl/:/opt/etl" -w /opt/etl openjdk:8 ./gradlew :predict:jib --image "gcr.io/$env:PROJECT_ID/${env:REPO_NAME}:predict"
 ```
 
 **macOS and Linux**
@@ -243,7 +243,7 @@ docker run --rm -v "$LOCATION_OF_SA_JSON:/opt/sa/key.json" -e GOOGLE_APPLICATION
 
 ## Training
 
-A subset of hyperparameters are available to set as Python arguments for the training job:
+A subset of [hyperparameters](https://xgboost.readthedocs.io/en/latest/python/python_api.html#module-xgboost.sklearn) are available to set as Python arguments for the training job:
 
 - `--eta`
 - `--max_depth`
@@ -272,6 +272,20 @@ gcloud ai-platform jobs submit training "blackfriday_"$(date +"%Y%m%d_%H%M%S") \
     --scale-tier CUSTOM \
     --master-machine-type n1-standard-4 \
     -- $BUCKET_NAME --n_jobs=4
+
+
+gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%S") \
+    --region us-east1 \
+    --job-dir gs://$BUCKET_NAME/model/output \
+    --staging-bucket gs://$BUCKET_NAME \
+    --package-path=xgb_training/trainer \
+    --module-name trainer.task \
+    --runtime-version 1.14 \
+    --python-version 3.5 \
+    --scale-tier CUSTOM \
+    --master-machine-type n1-standard-8 \
+    --config $HPTUNING_CONFIG \
+    -- --n_jobs=8 tune
 ```
 
 ### Using a container
@@ -281,7 +295,7 @@ The job can also be started from a custom-built container. Use this method if AI
 #### Build the container with the training source code
 
 ```bash
-docker build --pull -f .\src\xgb_training\Dockerfile --build-arg BUCKET=$BUCKET_NAME -t gcr.io/$PROJECT_ID/gcp-demo2:training ./
+docker build --pull -f .\src\xgb_training\Dockerfile -t gcr.io/$PROJECT_ID/gcp-demo2:training ./
 ```
 
 #### Push container to GCP Container Registry
@@ -295,13 +309,27 @@ docker push gcr.io/$PROJECT_ID/gcp-demo2:training
 Note for Windows users: Use `"blackfriday_$(Get-Date -UFormat "%Y%m%d_%H%M%S")"` for the job name.
 
 ```bash
-gcloud ai-platform jobs submit training "blackfriday_"$(date +"%Y%m%d_%H%M%S") \
+gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%S") \
     --region us-east1 \
     --job-dir gs://$BUCKET_NAME/model/output \
     --master-image-uri gcr.io/$PROJECT_ID/gcp-demo2:training \
     --scale-tier CUSTOM \
     --master-machine-type n1-standard-4 \
-    -- $BUCKET_NAME --n_jobs=4
+    --config $HPTUNING_CONFIG \
+    -- --n_jobs=4 tune
+
+gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%S") \
+    --region us-east1 \
+    --job-dir gs://$BUCKET_NAME/model/output \
+    --staging-bucket gs://$BUCKET_NAME \
+    --package-path=xgb_training/trainer \
+    --module-name trainer.task \
+    --runtime-version 1.14 \
+    --python-version 3.5 \
+    --scale-tier CUSTOM \
+    --master-machine-type n1-standard-8 \
+    --config $HPTUNING_CONFIG \
+    -- --n_jobs=8 tune
 ```
 
 ## Deployment

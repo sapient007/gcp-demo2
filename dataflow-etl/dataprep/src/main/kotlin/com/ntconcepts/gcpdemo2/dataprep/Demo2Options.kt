@@ -52,14 +52,14 @@ interface Demo2Options : DataflowPipelineOptions {
 
     fun setMlPartitionTrainWeight(mlPartitionTrainWeight: ValueProvider<Double>)
 
-    @get:Description("Weight to apply to random partitioning of testing data. Example: 15 for 15 percent. Default: 15.0")
-    @get:Default.Double(15.0)
+    @get:Description("Weight to apply to random partitioning of testing data. Example: 15 for 15 percent. Default: 20.0")
+    @get:Default.Double(20.0)
     val mlPartitionTestWeight: ValueProvider<Double>
 
     fun setMlPartitionTestWeight(mlPartitionTestWeight: ValueProvider<Double>)
 
-    @get:Description("Weight to apply to random partitioning of validation data. Example: 15 for 15 percent. Default: 15.0")
-    @get:Default.Double(15.0)
+    @get:Description("Weight to apply to random partitioning of validation data. Example: 15 for 15 percent. Default: 10.0")
+    @get:Default.Double(10.0)
     val mlPartitionValidationWeight: ValueProvider<Double>
 
     fun setMlPartitionValidationWeight(mlPartitionValidationWeight: ValueProvider<Double>)
