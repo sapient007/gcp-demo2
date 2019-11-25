@@ -258,7 +258,7 @@ A subset of [hyperparameters](https://xgboost.readthedocs.io/en/latest/python/py
 
 ### Use gcloud to package and start training job
 
-This method is the easiest. Run the command from inside `./src/xgb_training`.
+This method is the easiest. Run the command from inside `./xgb_training`.
 
 ```bash
 gcloud ai-platform jobs submit training "blackfriday_"$(date +"%Y%m%d_%H%M%S") \
@@ -318,25 +318,13 @@ gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%
     --config $HPTUNING_CONFIG \
     -- --n_jobs=4 tune
 
-gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%S") \
-    --region us-east1 \
-    --job-dir gs://$BUCKET_NAME/model/output \
-    --staging-bucket gs://$BUCKET_NAME \
-    --package-path=xgb_training/trainer \
-    --module-name trainer.task \
-    --runtime-version 1.14 \
-    --python-version 3.5 \
-    --scale-tier CUSTOM \
-    --master-machine-type n1-standard-8 \
-    --config $HPTUNING_CONFIG \
-    -- --n_jobs=8 tune
 ```
 
 ## Hyperparameter tuning
 
 ### Use gcloud to package and start an AI Platform hyperparameter tuning job
 
-Run the command from inside `./src/xgb_training`.
+Run the command from inside `./xgb_training`.
 
 #### Linux/macOS
 
@@ -345,14 +333,15 @@ gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%
     --region us-east1 \
     --job-dir gs://$BUCKET_NAME/model/output \
     --staging-bucket gs://$BUCKET_NAME \
-    --package-path=xgb_training/trainer \
+    --master-image-uri=gcr.io/$PROJECT_ID/gcp-demo2:training \
     --module-name trainer.task \
-    --runtime-version 1.14 \
-    --python-version 3.5 \
     --scale-tier CUSTOM \
     --master-machine-type n1-standard-8 \
     --config hptuning_config.yaml \
     -- --n_jobs=8 tune
+    # --package-path=xgb_training/trainer \
+    # --runtime-version 1.14 \
+    # --python-version 3.5 \
 ```
 
 #### Windows
