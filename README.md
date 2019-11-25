@@ -332,6 +332,46 @@ gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%
     -- --n_jobs=8 tune
 ```
 
+## Hyperparameter tuning
+
+### Use gcloud to package and start training job
+
+This method is the easiest. Run the command from inside `./src/xgb_training`.
+
+#### Linux/macOS
+
+```bash
+gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%S") \
+    --region us-east1 \
+    --job-dir gs://$BUCKET_NAME/model/output \
+    --staging-bucket gs://$BUCKET_NAME \
+    --package-path=xgb_training/trainer \
+    --module-name trainer.task \
+    --runtime-version 1.14 \
+    --python-version 3.5 \
+    --scale-tier CUSTOM \
+    --master-machine-type n1-standard-8 \
+    --config hptuning_config.yaml \
+    -- --n_jobs=8 tune
+```
+
+#### Windows
+
+```powershell
+gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%S") \
+    --region us-east1 \
+    --job-dir gs://$env:BUCKET_NAME/model/output \
+    --staging-bucket gs://$env:BUCKET_NAME \
+    --package-path=xgb_training/trainer \
+    --module-name trainer.task \
+    --runtime-version 1.14 \
+    --python-version 3.5 \
+    --scale-tier CUSTOM \
+    --master-machine-type n1-standard-8 \
+    --config hptuning_config.yaml \
+    -- --n_jobs=8 tune
+```
+
 ## Deployment
 
 ### Creating the deployment 
