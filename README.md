@@ -334,9 +334,9 @@ gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%
 
 ## Hyperparameter tuning
 
-### Use gcloud to package and start training job
+### Use gcloud to package and start an AI Platform hyperparameter tuning job
 
-This method is the easiest. Run the command from inside `./src/xgb_training`.
+Run the command from inside `./src/xgb_training`.
 
 #### Linux/macOS
 
