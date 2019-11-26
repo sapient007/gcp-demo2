@@ -12,9 +12,10 @@ REQUIRED_PACKAGES = [
 setup(
     name='trainer',
     version='0.1',
+    author="NT Concepts",
+    description="GCP Demo 2 source code package.",
     install_requires=REQUIRED_PACKAGES,
     packages=find_packages(),
     include_package_data=True,
-    description='GCP Demo 2 Training Application',
     python_requires='>=3.5'
 )
