@@ -2,6 +2,14 @@
 
 This code package leverages GCP tools to create a model capable of predicting the amount of money a shopper will spend on Black Friday.
 
+## Pipeline components
+
+### ETL
+
+### Model training
+
+#### Hypertuning
+
 ## Requirements
 
 You must have the [Google Cloud SDK](https://cloud.google.com/sdk/docs/quickstarts) installed and have a GCP project you can create resources in
