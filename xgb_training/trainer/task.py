@@ -15,6 +15,7 @@ import click
 # @click.option("--n_jobs", type=int, default=1)
 # @click.option("--objective", type=str, default="reg:linear")
 # @click.option("--eval_metric", type=str, default="rmse")
+# @click.option("--project", type=str, default='ml-sandbox-1-191918')
 @click.option("--eta", type=float, default=0.1)
 @click.option("--max_depth", type=int, default=6)
 @click.option("--subsample", type=float, default=1.0)

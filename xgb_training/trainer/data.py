@@ -14,7 +14,6 @@ def get_table_ref() -> bigquery_storage_v1beta1.types.TableReference:
 def get_read_options(partition_name: str) -> bigquery_storage_v1beta1.types.TableReadOptions:
     read_options = bigquery_storage_v1beta1.types.TableReadOptions()
     read_options.selected_fields.append("Purchase_Total")
-    # read_options.selected_fields.append("Purchase_Count")
     for x in range(21):
         if (x < 10):
             read_options.selected_fields.append("Occupation_%02d" % (x))
@@ -26,6 +25,7 @@ def get_read_options(partition_name: str) -> bigquery_storage_v1beta1.types.Tabl
     for x in range(5):
         read_options.selected_fields.append(
             "Stay_In_Current_City_Years_%d" % (x))
+    read_options.selected_fields.append("Marital_Status")
     read_options.selected_fields.append("Gender_m")
     read_options.selected_fields.append("Gender_f")
     read_options.selected_fields.append("Age_0_17")
@@ -59,7 +59,11 @@ def get_read_options(partition_name: str) -> bigquery_storage_v1beta1.types.Tabl
 
     read_options.selected_fields.append
 
-    read_options.row_restriction = 'ml_partition = "{}"'.format(partition_name)
+    if partition_name == 'train':
+        read_options.row_restriction = 'ml_partition = "{}"'.format(partition_name)
+
+    else:
+        read_options.row_restriction = 'ml_partition in ("test", "validation")'
     return read_options
 
 
