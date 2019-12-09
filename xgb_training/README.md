@@ -65,7 +65,7 @@ docker build --pull -f .\src\xgb_training\Dockerfile -t gcr.io/$PROJECT_ID/gcp-d
 docker push gcr.io/$PROJECT_ID/gcp-demo2:training
 ```
 
-### Starting the training job
+### Starting the training job in ML Engine
 
 Note for Windows users: Use `"blackfriday_$(Get-Date -UFormat "%Y%m%d_%H%M%S")"` for the job name.
 
@@ -79,6 +79,17 @@ gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%
     --config $HPTUNING_CONFIG \
     -- --n_jobs=4 tune
 
+```
+
+#### Running the training job from a container in ML Engine
+```bash
+gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%S") \
+    --region us-east1 \
+    --job-dir gs://$BUCKET_NAME/model/output \
+    --master-image-uri gcr.io/$PROJECT_ID/gcp-demo2:training \
+    --scale-tier CUSTOM \
+    --master-machine-type n1-standard-4 \
+    -- --n_jobs=4 --alpha=X --lambda=X train $BUCKET_NAME
 ```
 
 ## Hyperparameter tuning
