@@ -60,3 +60,14 @@ conda deactivate
 pip install -r xgb_training/requirements.txt
 ```
 
+#### Preprocessing and Data Pipeline ####
+ETL is done by Google Cloud Dataflow job in ./dataflow-etl. The dataprep job will read CSV data stored in Google Cloud Storage and write both event-level data and user summaries into BigQuery. The predict job will read in data from BigQuery, predict labels and write User_ID and predicted purchase totals to a new BigQuery table.
+
+For more information read: dataflow-etl/README.md
+
+#### Model Training ####
+The Scikit-Learn wrapper interface for XGBoost regression (XGBRegressor) to train our model. Using our preprocessed data, we downloaded our data from the BigQuery Storage API using multiple readers to control the amount of data being read into memory and trained. This allowed us to implement an iterative training process where we fit a shard of training data, save the model’s booster, then continue to the next shard where we load the previous model’s booster and fit the next shard to the model. We iterate through all BigQuery read session streams until we’ve trained on all data. Training used hyperparameters tuned using ML Engine’s training hyperparameter tuning feature. Parameters are discussed in more detail in the next section. Once all training data was fitted, we pickled the model and saved it to Google Cloud Storage for deployment in AI Platform. Both the training and tuning jobs were run on AI Platform using a custom container.
+
+For more information read: xgb_training/README.md
+
+#### Hypertuning ####

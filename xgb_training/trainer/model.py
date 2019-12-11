@@ -51,7 +51,13 @@ def train_shards(params: dict, test_partition_name="test", shards=1) -> Tuple[xg
         r = r2(xg_reg, x_test, y_test)
         r2_scores.append(r)
         print("Shard %d test data R^2: %.2f" % (shard, r))
+ 
+        y_pred_train = predict_regressor(xg_reg, x_train)
 
+        train_rmse = rmse(y_pred_train, y_train)
+        rmse_scores.append(train_rmse)
+        print("Shard %d training data RMSE: %.2f" % (shard, train_rmse))
+        
         y_pred = predict_regressor(xg_reg, x_test)
 
         score = rmse(y_pred, y_test)
