@@ -17,52 +17,23 @@ A subset of [hyperparameters](https://xgboost.readthedocs.io/en/latest/python/py
 - `--objective`
 - `--eval_metric`
 
-### Use gcloud to package and start training job
-
-This method is the easiest. Run the command from inside `./xgb_training`.
-
-```bash
-gcloud ai-platform jobs submit training "blackfriday_"$(date +"%Y%m%d_%H%M%S") \
-    --region us-east1 \
-    --job-dir gs://$BUCKET_NAME/model/output \
-    --staging-bucket gs://$BUCKET_NAME \
-    --package-path=xgb_training/trainer \
-    --module-name trainer.task \
-    --runtime-version 1.14 \
-    --python-version 3.5 \
-    --scale-tier CUSTOM \
-    --master-machine-type n1-standard-4 \
-    -- $BUCKET_NAME --n_jobs=4
-
-
-gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%S") \
-    --region us-east1 \
-    --job-dir gs://$BUCKET_NAME/model/output \
-    --staging-bucket gs://$BUCKET_NAME \
-    --package-path=xgb_training/trainer \
-    --module-name trainer.task \
-    --runtime-version 1.14 \
-    --python-version 3.5 \
-    --scale-tier CUSTOM \
-    --master-machine-type n1-standard-8 \
-    --config $HPTUNING_CONFIG \
-    -- --n_jobs=8 tune
-```
-
 ### Using a container
 
-The job can also be started from a custom-built container. Use this method if AI Platform runtime updates cause dependency problems. It requires enabling the Container Registry API.
+The job can be started from a custom-built container. It requires enabling the Container Registry API in your GCP project.
 
-#### Build the container with the training source code
+#### Build the container with the training source code and push
 
+Run this from inside `./xgb_training`
+
+##### Linux
 ```bash
-docker build --pull -f .\src\xgb_training\Dockerfile -t gcr.io/$PROJECT_ID/gcp-demo2:training ./
+docker build --pull -f ./Dockerfile -t gcr.io/$PROJECT_ID/gcp-demo2:training ./ && docker push gcr.io/$PROJECT_ID/gcp-demo2:training
 ```
 
-#### Push container to GCP Container Registry
+##### Windows
 
-```bash
-docker push gcr.io/$PROJECT_ID/gcp-demo2:training
+```powershell
+docker build --pull -f ./Dockerfile -t gcr.io/$env:PROJECT_ID/gcp-demo2:training ./; docker push gcr.io/$env:PROJECT_ID/gcp-demo2:training
 ```
 
 ### Starting the training job in ML Engine
@@ -76,23 +47,14 @@ gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%
     --master-image-uri gcr.io/$PROJECT_ID/gcp-demo2:training \
     --scale-tier CUSTOM \
     --master-machine-type n1-standard-4 \
-    --config $HPTUNING_CONFIG \
-    -- --n_jobs=4 tune
-
-```
-
-#### Running the training job from a container in ML Engine
-```bash
-gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%S") \
-    --region us-east1 \
-    --job-dir gs://$BUCKET_NAME/model/output \
-    --master-image-uri gcr.io/$PROJECT_ID/gcp-demo2:training \
-    --scale-tier CUSTOM \
-    --master-machine-type n1-standard-4 \
-    -- --n_jobs=4 --alpha=X --lambda=X train $BUCKET_NAME
+    -- --n_jobs=4 --eta=0.114 --max_depth=12 \
+    --colsample_bytree=0.221 --subsample=0.75 \
+    --lambda_param=2.317 train $BUCKET_NAME
 ```
 
 ## Hyperparameter tuning
+
+
 
 ### Use gcloud to package and start an AI Platform hyperparameter tuning job
 
@@ -102,35 +64,26 @@ Run the command from inside `./xgb_training`.
 
 ```bash
 gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%S") \
-    --region us-east1 \
+    --region us-east4 \
     --job-dir gs://$BUCKET_NAME/model/output \
-    --staging-bucket gs://$BUCKET_NAME \
-    --master-image-uri=gcr.io/$PROJECT_ID/gcp-demo2:training \
-    --module-name trainer.task \
+    --master-image-uri gcr.io/$PROJECT_ID/gcp-demo2:training \
     --scale-tier CUSTOM \
-    --master-machine-type n1-standard-8 \
+    --master-machine-type n1-standard-4 \
     --config hptuning_config.yaml \
-    -- --n_jobs=8 tune
-    # --package-path=xgb_training/trainer \
-    # --runtime-version 1.14 \
-    # --python-version 3.5 \
+    -- --n_jobs=4 tune
 ```
 
 #### Windows
 
 ```powershell
 gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%S") \
-    --region us-east1 \
-    --job-dir gs://$env:BUCKET_NAME/model/output \
-    --staging-bucket gs://$env:BUCKET_NAME \
-    --package-path=xgb_training/trainer \
-    --module-name trainer.task \
-    --runtime-version 1.14 \
-    --python-version 3.5 \
+    --region us-east4 \
+    --job-dir gs://$BUCKET_NAME/model/output \
+    --master-image-uri gcr.io/$PROJECT_ID/gcp-demo2:training \
     --scale-tier CUSTOM \
-    --master-machine-type n1-standard-8 \
+    --master-machine-type n1-standard-4 \
     --config hptuning_config.yaml \
-    -- --n_jobs=8 tune
+    -- --n_jobs=4 tune
 ```
 
 ## Deployment

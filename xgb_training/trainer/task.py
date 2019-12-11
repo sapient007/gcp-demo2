@@ -52,7 +52,8 @@ def cli(ctx, eta: float, max_depth: int,
 @click.option('--filename', type=str, default="model.bst")
 @click.option("--bucket_path", type=str, default="model")
 @click.option("--shards", type=int, default=1)
-def train(ctx, bucket: str, bucket_path: str, filename: str, shards: int):
+@click.option("--job-dir", type=str, default="")
+def train(ctx, bucket: str, bucket_path: str, filename: str, shards: int, job_dir: str):
     """
     TODO: description
     :param args:
