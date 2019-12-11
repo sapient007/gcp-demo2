@@ -55,8 +55,15 @@ The job can also be started from a custom-built container. Use this method if AI
 
 #### Build the container with the training source code
 
+##### Linux
 ```bash
-docker build --pull -f .\src\xgb_training\Dockerfile -t gcr.io/$PROJECT_ID/gcp-demo2:training ./
+docker build --pull -f .\xgb_training\Dockerfile -t gcr.io/$PROJECT_ID/gcp-demo2:training ./
+```
+
+##### Windows
+
+```powershell
+docker build --pull -f .\xgb_training\Dockerfile -t gcr.io/$env:PROJECT_ID/gcp-demo2:training ./
 ```
 
 #### Push container to GCP Container Registry
@@ -84,12 +91,12 @@ gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%
 #### Running the training job from a container in ML Engine
 ```bash
 gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%S") \
-    --region us-east1 \
+    --region us-east4 \
     --job-dir gs://$BUCKET_NAME/model/output \
     --master-image-uri gcr.io/$PROJECT_ID/gcp-demo2:training \
     --scale-tier CUSTOM \
     --master-machine-type n1-standard-4 \
-    -- --n_jobs=4 --alpha=X --lambda=X train $BUCKET_NAME
+    -- --n_jobs=4 train $BUCKET_NAME
 ```
 
 ## Hyperparameter tuning
@@ -114,6 +121,17 @@ gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%
     # --package-path=xgb_training/trainer \
     # --runtime-version 1.14 \
     # --python-version 3.5 \
+```
+
+```bash
+gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%S") \
+    --region us-east4 \
+    --job-dir gs://$BUCKET_NAME/model/output \
+    --master-image-uri gcr.io/$PROJECT_ID/gcp-demo2:training \
+    --scale-tier CUSTOM \
+    --master-machine-type n1-standard-4 \
+    --config hptuning_config.yaml \
+    -- --n_jobs=4 tune
 ```
 
 #### Windows
