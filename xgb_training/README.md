@@ -54,8 +54,6 @@ gcloud ai-platform jobs submit training "blackfriday_tune_"$(date +"%Y%m%d_%H%M%
 
 ## Hyperparameter tuning
 
-
-
 ### Use gcloud to package and start an AI Platform hyperparameter tuning job
 
 Run the command from inside `./xgb_training`.
@@ -97,7 +95,7 @@ gcloud ai-platform versions create $VERSION_NAME \
   --model $MODEL_NAME \
   --origin $MODEL_DIR \
   --runtime-version=1.14 \
-  --framework SCIKIT_LEARN \
+  --framework xgboost \
   --python-version=3.5
 ```
 
